@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Upload, FileText, Sprout } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { uploadCV } from "@/services/api";
 
 const UploadCV = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const UploadCV = () => {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) {
       toast({
         title: "No file selected",
@@ -28,20 +29,30 @@ const UploadCV = () => {
 
     setIsScanning(true);
 
-    // TODO (Backend): The selected PDF file needs to be sent to a backend endpoint for parsing.
-    // The backend will store it and return metadata for matching.
-
-    // Mock scanning process
-    setTimeout(() => {
-      setIsScanning(false);
-      // Mark CV as uploaded
+    try {
+      // Call API to upload and parse CV
+      const result = await uploadCV(file);
+      
+      // Store user ID and CV uploaded status
+      localStorage.setItem("userId", result.userId);
       localStorage.setItem("cvUploaded", "true");
+      
       toast({
         title: "CV Scanned Successfully! 🌱",
         description: "Finding your perfect matches...",
       });
+      
       navigate("/matches");
-    }, 3000);
+    } catch (error) {
+      console.error("CV upload error:", error);
+      toast({
+        title: "Upload Failed",
+        description: "There was an error processing your CV. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   return (

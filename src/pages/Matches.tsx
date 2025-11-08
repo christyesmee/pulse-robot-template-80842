@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CareerSpringNav from "@/components/CareerSpringNav";
 import JobMatchCard, { JobMatch } from "@/components/JobMatchCard";
 import ApplyModal from "@/components/ApplyModal";
+import { fetchJobMatches, saveJob, dislikeJob } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 const MOCK_JOBS: JobMatch[] = [
   {
@@ -67,37 +69,85 @@ const MOCK_JOBS: JobMatch[] = [
 ];
 
 const Matches = () => {
-  const [jobs, setJobs] = useState<JobMatch[]>(MOCK_JOBS);
+  const [jobs, setJobs] = useState<JobMatch[]>([]);
   const [selectedJob, setSelectedJob] = useState<JobMatch | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Fetch job matches on component mount
+  useEffect(() => {
+    const loadMatches = async () => {
+      try {
+        const userId = localStorage.getItem("userId") || "mock-user-123";
+        const matches = await fetchJobMatches(userId);
+        setJobs(matches);
+      } catch (error) {
+        console.error("Failed to load job matches:", error);
+        toast({
+          title: "Error Loading Matches",
+          description: "Could not load your job matches. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMatches();
+  }, [toast]);
 
   const handleApply = (job: JobMatch) => {
     setSelectedJob(job);
     setIsModalOpen(true);
   };
 
-  const handleSave = (job: JobMatch) => {
-    // Move to saved (will be implemented in SavedCareers page)
-    setJobs(jobs.filter((j) => j.id !== job.id));
-    localStorage.setItem(
-      "savedJobs",
-      JSON.stringify([
-        ...JSON.parse(localStorage.getItem("savedJobs") || "[]"),
-        job,
-      ])
-    );
+  const handleSave = async (job: JobMatch) => {
+    try {
+      const userId = localStorage.getItem("userId") || "mock-user-123";
+      await saveJob(userId, job.id);
+      
+      // Update local state and localStorage
+      setJobs(jobs.filter((j) => j.id !== job.id));
+      const savedJobs = JSON.parse(localStorage.getItem("savedJobs") || "[]");
+      localStorage.setItem("savedJobs", JSON.stringify([...savedJobs, job]));
+      
+      toast({
+        title: "Job Saved! 💚",
+        description: "Added to your saved careers",
+      });
+    } catch (error) {
+      console.error("Failed to save job:", error);
+      toast({
+        title: "Error",
+        description: "Could not save job. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDislike = (job: JobMatch) => {
-    // Move to disliked (will be implemented in DislikedJobs page)
-    setJobs(jobs.filter((j) => j.id !== job.id));
-    localStorage.setItem(
-      "dislikedJobs",
-      JSON.stringify([
-        ...JSON.parse(localStorage.getItem("dislikedJobs") || "[]"),
-        job,
-      ])
-    );
+  const handleDislike = async (job: JobMatch) => {
+    try {
+      const userId = localStorage.getItem("userId") || "mock-user-123";
+      await dislikeJob(userId, job.id);
+      
+      // Update local state and localStorage
+      setJobs(jobs.filter((j) => j.id !== job.id));
+      const dislikedJobs = JSON.parse(localStorage.getItem("dislikedJobs") || "[]");
+      localStorage.setItem("dislikedJobs", JSON.stringify([...dislikedJobs, job]));
+      
+      toast({
+        title: "Job Dismissed",
+        description: "We won't show this job again",
+      });
+    } catch (error) {
+      console.error("Failed to dislike job:", error);
+      toast({
+        title: "Error",
+        description: "Could not dismiss job. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -122,7 +172,12 @@ const Matches = () => {
         </div>
 
         {/* Job Cards Grid */}
-        {jobs.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-xl text-gray-600">Loading your perfect matches...</p>
+          </div>
+        ) : jobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {jobs.map((job) => (
               <JobMatchCard

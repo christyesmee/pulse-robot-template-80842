@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { JobMatch } from "@/components/JobMatchCard";
 import { FileDown, Mail, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { generateTailoredCV, generateApplicationEmail } from "@/services/api";
 
 interface ApplyModalProps {
   isOpen: boolean;
@@ -19,49 +20,67 @@ interface ApplyModalProps {
 const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
   const [showEmail, setShowEmail] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [emailContent, setEmailContent] = useState("");
+  const [isGeneratingCV, setIsGeneratingCV] = useState(false);
+  const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
   const { toast } = useToast();
 
   if (!job) return null;
 
-  const mockEmail = `Dear Hiring Manager,
-
-I am writing to express my interest in the opportunity at ${job.company || "your company"}. 
-
-As a recent graduate with relevant skills in the areas you're looking for, I believe I would be a great fit for this role. My background aligns well with the responsibilities you've outlined, particularly in ${job.description.slice(0, 50)}...
-
-I've attached my tailored CV for your review and would welcome the opportunity to discuss how I can contribute to your team.
-
-Thank you for your consideration.
-
-Best regards`;
-
-  const handleGenerateCV = () => {
-    // TODO (Backend): 'Generate Tailored CV' button must call the backend agent,
-    // sending the user's ID and this job's details. The agent will return a new,
-    // tailored PDF. The frontend should then trigger a download of this file.
-
-    toast({
-      title: "Generating CV...",
-      description: "Your tailored CV is being created",
-    });
-
-    setTimeout(() => {
+  const handleGenerateCV = async () => {
+    setIsGeneratingCV(true);
+    
+    try {
+      const userId = localStorage.getItem("userId") || "mock-user-123";
+      const cvBlobUrl = await generateTailoredCV(userId, job.id);
+      
+      // Trigger download
+      const link = document.createElement("a");
+      link.href = cvBlobUrl;
+      link.download = `CV_${job.company}_${job.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast({
-        title: "CV downloaded (mock)!",
+        title: "CV Downloaded! 📄",
         description: "Your tailored CV is ready",
       });
-    }, 2000);
+    } catch (error) {
+      console.error("CV generation error:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate CV. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingCV(false);
+    }
   };
 
-  const handleWriteEmail = () => {
-    // TODO (Backend): 'Write Application Email' button must call the backend agent
-    // to generate an email body. The frontend will display this text.
-
-    setShowEmail(true);
+  const handleWriteEmail = async () => {
+    setIsGeneratingEmail(true);
+    
+    try {
+      const userId = localStorage.getItem("userId") || "mock-user-123";
+      const email = await generateApplicationEmail(userId, job.id);
+      
+      setEmailContent(email);
+      setShowEmail(true);
+    } catch (error) {
+      console.error("Email generation error:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingEmail(false);
+    }
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText(mockEmail);
+    navigator.clipboard.writeText(emailContent);
     setIsCopied(true);
     toast({
       title: "Email copied!",
@@ -72,7 +91,7 @@ Best regards`;
 
   const mailtoLink = `mailto:hiring@company.com?subject=Application for ${
     job.company || "Position"
-  }&body=${encodeURIComponent(mockEmail)}`;
+  }&body=${encodeURIComponent(emailContent)}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -100,17 +119,37 @@ Best regards`;
                 size="lg"
                 className="w-full"
                 variant="outline"
+                disabled={isGeneratingCV}
               >
-                <FileDown className="w-5 h-5 mr-2" />
-                Generate Tailored CV
+                {isGeneratingCV ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Generating CV...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-5 h-5 mr-2" />
+                    Generate Tailored CV
+                  </>
+                )}
               </Button>
               <Button
                 onClick={handleWriteEmail}
                 size="lg"
                 className="w-full"
+                disabled={isGeneratingEmail}
               >
-                <Mail className="w-5 h-5 mr-2" />
-                Write Application Email
+                {isGeneratingEmail ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Writing Email...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-5 h-5 mr-2" />
+                    Write Application Email
+                  </>
+                )}
               </Button>
             </div>
           ) : (
@@ -118,7 +157,7 @@ Best regards`;
             <div className="space-y-4">
               <div className="border rounded-lg p-4 bg-gray-50">
                 <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">
-                  {mockEmail}
+                  {emailContent}
                 </pre>
               </div>
 
