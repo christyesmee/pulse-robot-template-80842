@@ -98,16 +98,28 @@ const CareerSpringLanding = () => {
 
       {/* Hero Section */}
       <section 
-        className="overflow-hidden relative bg-cover" 
-        style={{
-          backgroundImage: 'url("/Header-background.webp")',
-          backgroundPosition: 'center 30%', 
-          padding: window.innerWidth < 768 ? '100px 12px 80px' : '120px 20px 120px'
-        }}
+        className="overflow-hidden relative min-h-screen flex items-center"
       >
-        <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-gradient-to-br from-emerald-400/20 to-green-500/20 blur-3xl rounded-full"></div>
+        {/* Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: 'brightness(0.7)' }}
+        >
+          <source src="/hero-background.mp4" type="video/mp4" />
+        </video>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/40"></div>
+        
+        {/* Floating gradient orbs */}
+        <div className="absolute top-[20%] left-[10%] w-96 h-96 bg-gradient-to-br from-emerald-400/30 to-green-500/30 blur-3xl rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[20%] right-[10%] w-80 h-80 bg-gradient-to-br from-primary/20 to-emerald-300/20 blur-3xl rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+        
+        <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
             <div 
               className="inline-flex items-center bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 mb-6 opacity-0 animate-fade-in shadow-sm" 
@@ -118,16 +130,16 @@ const CareerSpringLanding = () => {
             </div>
             
             <h1 
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight opacity-0 animate-fade-in mb-6" 
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight opacity-0 animate-fade-in mb-6 text-white drop-shadow-2xl" 
               style={{ animationDelay: "0.3s" }}
             >
               Find Your First 'Real' Job,<br className="hidden sm:inline" />
-              <span className="text-primary"> Minus the Jargon</span>
+              <span className="text-primary drop-shadow-[0_0_30px_rgba(16,185,129,0.5)]"> Minus the Jargon</span>
             </h1>
             
             <p 
               style={{ animationDelay: "0.5s" }} 
-              className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed opacity-0 animate-fade-in max-w-3xl"
+              className="text-lg sm:text-xl text-white/90 mb-8 leading-relaxed opacity-0 animate-fade-in max-w-3xl drop-shadow-lg"
             >
               Career Spring translates confusing job posts into clear opportunities that match your skills. No experience required.
             </p>
@@ -167,29 +179,27 @@ const CareerSpringLanding = () => {
               className="grid grid-cols-3 gap-8 w-full max-w-3xl opacity-0 animate-fade-in"
               style={{ animationDelay: "0.9s" }}
             >
-              <div className="glass-card p-6 text-center">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
+              <div className="glass-card p-6 text-center backdrop-blur-xl bg-white/10 border-white/20">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2 drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                   10,000+
                 </div>
-                <div className="text-gray-600 text-sm">Graduates Matched</div>
+                <div className="text-white/80 text-sm">Graduates Matched</div>
               </div>
-              <div className="glass-card p-6 text-center">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
+              <div className="glass-card p-6 text-center backdrop-blur-xl bg-white/10 border-white/20">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2 drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                   500+
                 </div>
-                <div className="text-gray-600 text-sm">Partner Companies</div>
+                <div className="text-white/80 text-sm">Partner Companies</div>
               </div>
-              <div className="glass-card p-6 text-center">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
+              <div className="glass-card p-6 text-center backdrop-blur-xl bg-white/10 border-white/20">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2 drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                   95%
                 </div>
-                <div className="text-gray-600 text-sm">Success Rate</div>
+                <div className="text-white/80 text-sm">Success Rate</div>
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="hidden lg:block absolute bottom-0 left-1/4 w-64 h-64 bg-emerald-100/30 rounded-full blur-3xl -z-10"></div>
       </section>
     </div>
   );
