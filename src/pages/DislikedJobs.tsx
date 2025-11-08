@@ -27,28 +27,33 @@ const DislikedJobs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50">
+    <div className="min-h-screen bg-gray-50">
       <CareerSpringNav />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <X className="w-8 h-8 text-gray-500" />
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Disliked Jobs
-            </h1>
-            <p className="text-lg text-gray-600">
-              {dislikedJobs.length} {dislikedJobs.length === 1 ? "job" : "jobs"} you're not interested in
-            </p>
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center bg-white rounded-full px-4 py-2 mb-4 shadow-sm">
+            <X className="w-5 h-5 text-gray-500 mr-2" />
+            <span className="text-sm font-medium text-gray-700">
+              {dislikedJobs.length} Dismissed
+            </span>
           </div>
+          <h1 className="section-title text-3xl md:text-5xl mb-4">
+            Disliked Jobs
+          </h1>
+          <p className="section-subtitle max-w-2xl mx-auto">
+            {dislikedJobs.length > 0 
+              ? "You can always restore these if you change your mind" 
+              : "Jobs you dismiss will appear here"}
+          </p>
         </div>
 
         {/* Job Cards Grid */}
         {dislikedJobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {dislikedJobs.map((job) => (
-              <Card key={job.id} className="p-6 opacity-60 hover:opacity-100 transition-opacity relative">
+              <Card key={job.id} className="glass-card p-6 opacity-60 hover:opacity-100 transition-opacity relative">
                 {/* Match Score Badge */}
                 <Badge
                   className={`absolute top-4 right-4 text-sm font-bold px-3 py-1 ${getMatchColor(
@@ -60,19 +65,24 @@ const DislikedJobs = () => {
 
                 {/* Company Name */}
                 {job.company && (
-                  <p className="text-sm font-semibold text-gray-500 mb-2">{job.company}</p>
+                  <p className="text-sm font-semibold text-muted-foreground mb-2">{job.company}</p>
+                )}
+
+                {/* Salary */}
+                {job.salary && (
+                  <p className="text-lg font-bold text-primary mb-4 mt-8">{job.salary}</p>
                 )}
 
                 {/* Description */}
-                <div className="mt-8 mb-4">
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-foreground mb-3">
                     What you'll actually do:
                   </h3>
-                  <p className="text-gray-700 leading-relaxed">{job.description}</p>
+                  <p className="text-muted-foreground leading-relaxed">{job.description}</p>
                 </div>
 
                 {/* Location */}
-                <div className="flex items-center gap-2 text-gray-600 mb-6">
+                <div className="flex items-center gap-2 text-muted-foreground mb-6">
                   <MapPin className="w-4 h-4" />
                   <span className="text-sm">{job.location}</span>
                 </div>

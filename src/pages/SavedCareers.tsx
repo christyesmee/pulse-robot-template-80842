@@ -37,21 +37,26 @@ const SavedCareers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50">
+    <div className="min-h-screen bg-gray-50">
       <CareerSpringNav />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <Bookmark className="w-8 h-8 text-primary" />
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Saved Careers
-            </h1>
-            <p className="text-lg text-gray-600">
-              {savedJobs.length} {savedJobs.length === 1 ? "opportunity" : "opportunities"} saved for later
-            </p>
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center bg-white rounded-full px-4 py-2 mb-4 shadow-sm">
+            <Bookmark className="w-5 h-5 text-primary mr-2" />
+            <span className="text-sm font-medium text-gray-700">
+              {savedJobs.length} Saved
+            </span>
           </div>
+          <h1 className="section-title text-3xl md:text-5xl mb-4">
+            Saved Careers
+          </h1>
+          <p className="section-subtitle max-w-2xl mx-auto">
+            {savedJobs.length > 0 
+              ? "Your bookmarked opportunities are waiting here" 
+              : "Start saving jobs you're interested in"}
+          </p>
         </div>
 
         {/* Job Cards Grid */}

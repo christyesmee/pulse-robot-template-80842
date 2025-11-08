@@ -34,6 +34,8 @@ const UploadCV = () => {
     // Mock scanning process
     setTimeout(() => {
       setIsScanning(false);
+      // Mark CV as uploaded
+      localStorage.setItem("cvUploaded", "true");
       toast({
         title: "CV Scanned Successfully! 🌱",
         description: "Finding your perfect matches...",
@@ -43,37 +45,56 @@ const UploadCV = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="py-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sprout className="w-8 h-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">Career Spring</span>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+              <Sprout className="w-8 h-8 text-primary" />
+              <span className="text-2xl font-bold text-primary">Career Spring</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center space-y-6 mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            Upload Your CV to Get Started
-          </h1>
-          <p className="text-xl text-gray-600">
-            Let us analyze your skills and find the perfect opportunities for you
-          </p>
-        </div>
+      <section 
+        className="overflow-hidden relative bg-cover" 
+        style={{
+          backgroundImage: 'url("/Header-background.webp")',
+          backgroundPosition: 'center 30%', 
+          minHeight: 'calc(100vh - 64px)'
+        }}
+      >
+        <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-gradient-to-br from-emerald-400/20 to-green-500/20 blur-3xl rounded-full"></div>
+        
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+          <div className="text-center space-y-6 mb-12">
+            <div 
+              className="inline-flex items-center bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 mb-4 shadow-sm opacity-0 animate-fade-in" 
+              style={{ animationDelay: "0.1s" }}
+            >
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs mr-2">02</span>
+              <span className="text-sm font-medium text-gray-700">Upload CV</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+              Upload Your CV to Get Started
+            </h1>
+            <p className="text-xl text-gray-700 opacity-0 animate-fade-in" style={{ animationDelay: "0.5s" }}>
+              Let us analyze your skills and find the perfect opportunities for you
+            </p>
+          </div>
 
-        {/* Upload Area */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border-2 border-dashed border-emerald-300 hover:border-emerald-500 transition-colors">
-          <div className="space-y-6">
+          {/* Upload Area */}
+          <div className="glass-card p-8 md:p-12 border-2 border-dashed border-primary/30 hover:border-primary/50 transition-colors opacity-0 animate-fade-in" style={{ animationDelay: "0.7s" }}>
+            <div className="space-y-6">
             {/* File Input Area */}
             <label
               htmlFor="cv-upload"
               className="flex flex-col items-center justify-center cursor-pointer group"
             >
-              <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-6 group-hover:bg-emerald-200 transition-colors">
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 {file ? (
                   <FileText className="w-12 h-12 text-primary" />
                 ) : (
@@ -131,9 +152,10 @@ const UploadCV = () => {
                 )}
               </Button>
             </div>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </section>
     </div>
   );
 };
