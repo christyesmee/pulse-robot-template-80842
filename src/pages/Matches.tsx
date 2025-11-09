@@ -252,24 +252,24 @@ const Matches = () => {
 
         <Tabs defaultValue="new-jobs" className="w-full">
           <div className="sticky top-0 z-10 bg-white pb-4 border-b mb-8">
-            <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 gap-2">
-              <TabsTrigger value="new-jobs" className="flex items-center gap-2">
+            <TabsList className="flex w-full flex-nowrap gap-2">
+              <TabsTrigger value="new-jobs" className="flex-1 flex items-center gap-2 justify-center">
                 <Briefcase className="w-4 h-4" />
                 New Jobs ({scrapedJobs.length})
               </TabsTrigger>
-              <TabsTrigger value="cart" className="flex items-center gap-2">
+              <TabsTrigger value="cart" className="flex-1 flex items-center gap-2 justify-center">
                 <ShoppingCart className="w-4 h-4" />
                 Cart ({cartJobs.length})
               </TabsTrigger>
-              <TabsTrigger value="applications" className="flex items-center gap-2">
+              <TabsTrigger value="applications" className="flex-1 flex items-center gap-2 justify-center">
                 <CheckCircle className="w-4 h-4" />
                 Applications ({applications.length})
               </TabsTrigger>
-              <TabsTrigger value="interviews" className="flex items-center gap-2">
+              <TabsTrigger value="interviews" className="flex-1 flex items-center gap-2 justify-center">
                 <Calendar className="w-4 h-4" />
                 Interviews ({interviewApplications.length})
               </TabsTrigger>
-              <TabsTrigger value="learning" className="flex items-center gap-2">
+              <TabsTrigger value="learning" className="flex-1 flex items-center gap-2 justify-center">
                 <XCircle className="w-4 h-4" />
                 Learning ({rejectedApplications.length})
               </TabsTrigger>
