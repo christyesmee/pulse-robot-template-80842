@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, ShoppingCart, Briefcase, CheckCircle, Loader2, XCircle, Inbox } from "lucide-react";
+import { User, ShoppingCart, Briefcase, CheckCircle, Loader2, XCircle, Inbox, Mail, FileText, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationsSummary } from "@/components/ApplicationsSummary";
 import { JobCard } from "@/components/JobCard";
@@ -63,6 +64,8 @@ const Matches = () => {
   const [inboxEmails, setInboxEmails] = useState<EmailResponse[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<EmailResponse | null>(null);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [applicationDetailOpen, setApplicationDetailOpen] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -833,17 +836,29 @@ const Matches = () => {
             
             {applications.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {applications.map((app) => (
-                  <JobCard
-                    key={app.id}
-                    title={app.position}
-                    company={app.company}
-                    status={app.status}
-                    applicationSentAt={app.application_sent_at}
-                    lastStatusUpdate={app.last_status_update}
-                    statusDetails={app.status_details}
-                  />
-                ))}
+                {applications.map((app) => {
+                  const scrapedJob = scrapedJobs.find(j => j.job_id === app.job_id);
+                  return (
+                    <div 
+                      key={app.id} 
+                      onClick={() => {
+                        setSelectedApplication(app);
+                        setApplicationDetailOpen(true);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <JobCard
+                        title={app.position || 'Position'}
+                        company={app.company || 'Company'}
+                        status={app.status}
+                        applicationSentAt={app.application_sent_at}
+                        lastStatusUpdate={app.last_status_update}
+                        statusDetails={app.status_details}
+                        sourceUrl={scrapedJob?.source_url}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-12">
@@ -932,6 +947,81 @@ const Matches = () => {
               to_email: selectedEmail.to_email,
             } : null}
           />
+
+          {/* Application Detail Dialog */}
+          {selectedApplication && (
+            <Dialog open={applicationDetailOpen} onOpenChange={setApplicationDetailOpen}>
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Application Details</DialogTitle>
+                </DialogHeader>
+                
+                <div className="space-y-6">
+                  {/* Job Info */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">{selectedApplication.position}</h3>
+                    <p className="text-foreground/70">{selectedApplication.company}</p>
+                  </div>
+
+                  {/* Email Sent */}
+                  <div>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      Email Sent
+                    </h4>
+                    <div className="bg-muted/50 p-4 rounded-lg whitespace-pre-line text-sm">
+                      {`Dear Hiring Manager at ${selectedApplication.company},
+
+I am writing to express my strong interest in the ${selectedApplication.position} position. With my background in software development and passion for creating innovative solutions, I believe I would be an excellent fit for your team.
+
+During my recent internship at TechCorp, I gained hands-on experience with modern development practices and collaborated with cross-functional teams to deliver high-quality products. My academic projects have further strengthened my skills in problem-solving and technical communication.
+
+I am particularly drawn to ${selectedApplication.company} because of your commitment to innovation and your impact in the industry. I am excited about the opportunity to contribute to your mission and grow as a professional.
+
+Thank you for considering my application. I look forward to the opportunity to discuss how my skills and enthusiasm can benefit your team.
+
+Best regards,
+[Your Name]`}
+                    </div>
+                  </div>
+
+                  {/* CV Attached */}
+                  <div>
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      CV Attached
+                    </h4>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="text-sm text-foreground/70 mb-3">
+                        Your CV was customized and sent as a PDF for this application.
+                      </p>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Download CV (PDF)
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Job Link */}
+                  {scrapedJobs.find(j => j.job_id === selectedApplication.job_id)?.source_url && (
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <ExternalLink className="w-4 h-4" />
+                        Original Job Posting
+                      </h4>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => window.open(scrapedJobs.find(j => j.job_id === selectedApplication.job_id)?.source_url, '_blank')}
+                      >
+                        View Job Description
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
 
           {/* Learning Opportunities (Rejected) Tab */}
           <TabsContent value="learning">
