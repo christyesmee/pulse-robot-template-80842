@@ -45,17 +45,11 @@ const Matches = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-      setUserId(user.id);
-      loadData(user.id);
-    };
-    checkAuth();
-  }, [navigate]);
+    // Use a demo user ID for testing without auth
+    const demoUserId = 'demo-user-123';
+    setUserId(demoUserId);
+    loadData(demoUserId);
+  }, []);
 
   const loadData = async (uid: string) => {
     setIsLoading(true);
