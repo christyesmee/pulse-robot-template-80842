@@ -158,17 +158,34 @@ const Matches = () => {
 
     setIsApplying(true);
     try {
+      // Open all job URLs in new tabs
+      cartJobs.forEach((job, index) => {
+        const scrapedJob = scrapedJobs.find(sj => sj.job_id === job.job_id);
+        if (scrapedJob?.source_url) {
+          // Stagger the tab openings slightly to avoid browser blocking
+          setTimeout(() => {
+            window.open(scrapedJob.source_url, '_blank');
+          }, index * 100);
+        }
+      });
+
+      // Update all cart items to "applied" status
       const applicationIds = cartJobs.map(job => job.id);
       
-      const { error } = await supabase.functions.invoke('apply-to-jobs', {
-        body: { applicationIds, userId }
-      });
+      const { error } = await supabase
+        .from('job_applications')
+        .update({
+          status: 'applied',
+          application_sent_at: new Date().toISOString(),
+          last_status_update: new Date().toISOString(),
+        })
+        .in('id', applicationIds);
 
       if (error) throw error;
 
       toast({
-        title: "Applications Submitted! 🎉",
-        description: `Successfully applied to ${cartJobs.length} jobs`,
+        title: "Applications Opened! 🚀",
+        description: `${cartJobs.length} job applications opened in new tabs. Jobs moved to Applications.`,
       });
 
       loadData(userId);
@@ -176,7 +193,7 @@ const Matches = () => {
       console.error('Error applying to jobs:', error);
       toast({
         title: "Error",
-        description: "Failed to submit applications. Please try again.",
+        description: "Failed to process applications. Please try again.",
         variant: "destructive",
       });
     } finally {
