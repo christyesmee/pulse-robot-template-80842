@@ -1,22 +1,24 @@
 
 
-```markdown
-# 🌱 CareerSpring — Front-End (Pulse Robot Template)
+# 🌱 CareerSpring — Front-End
 
-**Find Your First Real Job — Minus the Jargon.**  
-CareerSpring helps graduates discover jobs that truly match their background, skills, and interests — powered by an agentic AI that learns about you and keeps improving over time.
+> **Find Your First Real Job — Minus the Jargon.**  
+> Built during a 2-day hackathon by **Team Agents of Flavour @ Prosus AI House**.
 
-This is the **React + Vite** front-end for the CareerSpring agentic system.  
-It connects to the backend API (AISOHackathon) to display live job recommendations, CV insights, and personalized updates.
+CareerSpring is an **agentic AI career assistant** that helps graduates find jobs that *actually fit them* — by understanding their background, skills, and ambitions.  
+The app combines **CV parsing**, **semantic job matching**, and **automated insights** to simplify the transition from graduation to the workplace.
+
+This repository contains the **React + Vite front-end**, built on top of the Pulse Robot template.  
+It connects to the **AISOHackathon backend** (FastAPI) to display live job recommendations, personalized insights, and CV-based matches.
 
 ---
 
 ## 🧭 Overview
 
-The Pulse Robot front-end provides:
+The front-end provides:
 - A clean, responsive UI for job recommendations.
-- Seamless API integration with the backend (`/show_jobs`, `/upload_cv`, etc.).
-- Supabase authentication & user management.
+- Seamless integration with backend APIs (`/show_jobs`, `/upload_cv`, etc.).
+- Supabase-based authentication and user management.
 
 ---
 
@@ -34,7 +36,6 @@ The Pulse Robot front-end provides:
 
 ## 📁 Folder Structure
 
-```
 
 src/
 ├── components/       # Reusable UI (JobCard, InboxEmailCard, etc.)
