@@ -24,6 +24,46 @@ const FIELDS = [
   "I'm not sure yet!",
 ];
 
+const WORK_STYLE_OPTIONS = [
+  "Remote work",
+  "Hybrid (2-3 days in office)",
+  "Fully in-office",
+  "Flexible schedule",
+  "9-5 structured schedule",
+];
+
+const VALUES_OPTIONS = [
+  "Learning & development opportunities",
+  "Work-life balance",
+  "Career growth & promotions",
+  "Collaborative team environment",
+  "Autonomy & independence",
+  "Making social impact",
+  "Competitive salary",
+  "Innovative & cutting-edge work",
+];
+
+const BENEFITS_OPTIONS = [
+  "Free lunch or snacks",
+  "Gym membership or wellness perks",
+  "Company car",
+  "Learning budget or courses",
+  "Modern office space",
+  "Team events & activities",
+  "Extra vacation days",
+  "Health insurance",
+];
+
+const CULTURE_OPTIONS = [
+  "Startup (fast-paced, entrepreneurial)",
+  "Corporate (structured, stable)",
+  "Creative & innovative",
+  "Mission-driven (social good)",
+  "Diverse & inclusive",
+  "Collaborative & team-oriented",
+  "Results-driven",
+];
+
 const EXPERIENCE_TYPES = [
   { id: "internship", label: "Internship(s)", placeholder: "What company or field?" },
   { id: "project", label: "Class / Capstone Project", placeholder: "What was the project? (e.g., 'Marketing plan for a local business')" },
@@ -61,6 +101,13 @@ const Profile = () => {
   const [tools, setTools] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [newTool, setNewTool] = useState("");
+  
+  // New: Values & Preferences
+  const [selectedWorkStyle, setSelectedWorkStyle] = useState<string[]>([]);
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [selectedBenefits, setSelectedBenefits] = useState<string[]>([]);
+  const [selectedCulture, setSelectedCulture] = useState<string[]>([]);
+  const [growthAspirations, setGrowthAspirations] = useState("");
 
   // Check LinkedIn connection status
   useEffect(() => {
@@ -228,6 +275,11 @@ const Profile = () => {
     localStorage.setItem("onboarding_experiences", JSON.stringify(selectedExperiences));
     localStorage.setItem("onboarding_skills", JSON.stringify(selectedSkills));
     localStorage.setItem("onboarding_tools", JSON.stringify(tools));
+    localStorage.setItem("profile_workStyle", JSON.stringify(selectedWorkStyle));
+    localStorage.setItem("profile_values", JSON.stringify(selectedValues));
+    localStorage.setItem("profile_benefits", JSON.stringify(selectedBenefits));
+    localStorage.setItem("profile_culture", JSON.stringify(selectedCulture));
+    localStorage.setItem("profile_growthAspirations", growthAspirations);
     localStorage.setItem("onboarding_completed", "true");
 
     toast({
@@ -611,6 +663,116 @@ const Profile = () => {
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
+          </Card>
+
+          {/* Work Style Preferences */}
+          <Card className="glass-card p-8">
+            <h2 className="text-2xl font-display font-bold mb-2">What work style do you prefer?</h2>
+            <p className="text-foreground/70 mb-6">Select your preferred work arrangements</p>
+            
+            <div className="flex flex-wrap gap-3">
+              {WORK_STYLE_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => setSelectedWorkStyle(prev => 
+                    prev.includes(option) ? prev.filter(o => o !== option) : [...prev, option]
+                  )}
+                  className={`px-6 py-3 rounded-full text-sm font-medium transition-all ${
+                    selectedWorkStyle.includes(option)
+                      ? "bg-primary text-white shadow-lg scale-105"
+                      : "bg-white text-gray-700 border-2 border-gray-200 hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* Values & Priorities */}
+          <Card className="glass-card p-8">
+            <h2 className="text-2xl font-display font-bold mb-2">What do you value most?</h2>
+            <p className="text-foreground/70 mb-6">Choose what matters to you in a job (pick 2-4)</p>
+            
+            <div className="flex flex-wrap gap-3">
+              {VALUES_OPTIONS.map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setSelectedValues(prev => 
+                    prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+                  )}
+                  disabled={!selectedValues.includes(value) && selectedValues.length >= 4}
+                  className={`px-6 py-3 rounded-full text-sm font-medium transition-all ${
+                    selectedValues.includes(value)
+                      ? "bg-primary text-white shadow-lg scale-105"
+                      : "bg-white text-gray-700 border-2 border-gray-200 hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  }`}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* Benefits Preferences */}
+          <Card className="glass-card p-8">
+            <h2 className="text-2xl font-display font-bold mb-2">Which benefits matter to you?</h2>
+            <p className="text-foreground/70 mb-6">Select the benefits you care about most</p>
+            
+            <div className="flex flex-wrap gap-3">
+              {BENEFITS_OPTIONS.map((benefit) => (
+                <button
+                  key={benefit}
+                  onClick={() => setSelectedBenefits(prev => 
+                    prev.includes(benefit) ? prev.filter(b => b !== benefit) : [...prev, benefit]
+                  )}
+                  className={`px-6 py-3 rounded-full text-sm font-medium transition-all ${
+                    selectedBenefits.includes(benefit)
+                      ? "bg-primary text-white shadow-lg scale-105"
+                      : "bg-white text-gray-700 border-2 border-gray-200 hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {benefit}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* Company Culture Preferences */}
+          <Card className="glass-card p-8">
+            <h2 className="text-2xl font-display font-bold mb-2">What kind of culture do you thrive in?</h2>
+            <p className="text-foreground/70 mb-6">Choose the company culture types you prefer</p>
+            
+            <div className="flex flex-wrap gap-3">
+              {CULTURE_OPTIONS.map((culture) => (
+                <button
+                  key={culture}
+                  onClick={() => setSelectedCulture(prev => 
+                    prev.includes(culture) ? prev.filter(c => c !== culture) : [...prev, culture]
+                  )}
+                  className={`px-6 py-3 rounded-full text-sm font-medium transition-all ${
+                    selectedCulture.includes(culture)
+                      ? "bg-primary text-white shadow-lg scale-105"
+                      : "bg-white text-gray-700 border-2 border-gray-200 hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {culture}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* Growth Aspirations */}
+          <Card className="glass-card p-8">
+            <h2 className="text-2xl font-display font-bold mb-2">What are your growth aspirations?</h2>
+            <p className="text-foreground/70 mb-6">Tell us about your career goals and where you see yourself growing</p>
+            
+            <textarea
+              value={growthAspirations}
+              onChange={(e) => setGrowthAspirations(e.target.value)}
+              placeholder="e.g., I want to become a lead developer in 3-5 years, build AI products, or transition into product management..."
+              className="w-full min-h-[120px] p-4 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y"
+            />
           </Card>
 
           {/* Save Button */}

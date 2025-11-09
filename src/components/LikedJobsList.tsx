@@ -1,8 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ExternalLink, FileText, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ExternalLink, FileText, Trash2, Mail, Eye } from "lucide-react";
+import { useState } from "react";
 
 interface LikedJob {
   id: string;
@@ -25,6 +26,68 @@ interface LikedJobsListProps {
 
 export const LikedJobsList = ({ jobs, onApplySelected, onRemove, isApplying }: LikedJobsListProps) => {
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [cvDialogOpen, setCvDialogOpen] = useState(false);
+  const [selectedJobForPreview, setSelectedJobForPreview] = useState<LikedJob | null>(null);
+  
+  // Mock generated email and CV
+  const generateMockEmail = (job: LikedJob) => `Dear Hiring Manager at ${job.company},
+
+I am writing to express my strong interest in the ${job.position} position. With my background in software development and passion for creating innovative solutions, I believe I would be an excellent fit for your team.
+
+During my recent internship at TechCorp, I gained hands-on experience with modern development practices and collaborated with cross-functional teams to deliver high-quality products. My academic projects have further strengthened my skills in problem-solving and technical communication.
+
+I am particularly drawn to ${job.company} because of your commitment to innovation and your impact in the industry. I am excited about the opportunity to contribute to your mission and grow as a professional.
+
+Thank you for considering my application. I look forward to the opportunity to discuss how my skills and enthusiasm can benefit your team.
+
+Best regards,
+[Your Name]`;
+
+  const generateMockCV = (job: LikedJob) => `CURRICULUM VITAE
+
+John Doe
+Email: john.doe@email.com | Phone: +31 6 1234 5678
+LinkedIn: linkedin.com/in/johndoe
+
+SUMMARY
+Recent graduate with a strong foundation in software development and a passion for ${job.position} roles. Eager to apply technical skills and creative problem-solving abilities at ${job.company}.
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology, 2020-2024
+GPA: 3.8/4.0
+
+EXPERIENCE
+Software Development Intern | TechCorp | Summer 2023
+• Developed responsive web applications using React and TypeScript
+• Collaborated with designers to implement pixel-perfect UI components
+• Participated in agile development processes and code reviews
+
+Student Developer | University Innovation Lab | 2022-2024
+• Built educational web platforms used by 500+ students
+• Mentored junior developers in best practices
+• Led a team of 4 developers on a capstone project
+
+SKILLS
+• Programming: JavaScript, TypeScript, Python, Java
+• Web Development: React, Node.js, HTML/CSS
+• Tools: Git, Docker, Figma, Jira
+• Soft Skills: Team collaboration, Communication, Problem-solving
+
+PROJECTS
+Job Application Tracker - Full-stack web app for managing job applications
+E-commerce Platform - Built a scalable online store with payment integration`;
+
+  const handleViewEmail = (job: LikedJob) => {
+    setSelectedJobForPreview(job);
+    setEmailDialogOpen(true);
+  };
+
+  const handleViewCV = (job: LikedJob) => {
+    setSelectedJobForPreview(job);
+    setCvDialogOpen(true);
+  };
 
   const handleSelectAll = () => {
     if (selectedJobs.length === jobs.length) {
@@ -134,14 +197,26 @@ export const LikedJobsList = ({ jobs, onApplySelected, onRemove, isApplying }: L
                   )}
                 </td>
                 <td className="p-3">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-1 flex-wrap">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
-                      title="View Generated CV"
+                      className="h-8 px-2 text-xs"
+                      title="Review Email"
+                      onClick={() => handleViewEmail(job)}
                     >
-                      <FileText className="h-4 w-4" />
+                      <Mail className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden xl:inline">Email</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs"
+                      title="Review CV"
+                      onClick={() => handleViewCV(job)}
+                    >
+                      <Eye className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden xl:inline">CV</span>
                     </Button>
                     {job.source_url && (
                       <Button
@@ -170,6 +245,58 @@ export const LikedJobsList = ({ jobs, onApplySelected, onRemove, isApplying }: L
           </tbody>
         </table>
       </div>
+
+      {/* Email Preview Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Generated Email to {selectedJobForPreview?.company}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <div className="bg-muted/30 rounded-lg p-6 border border-border">
+              <div className="mb-4 pb-4 border-b border-border">
+                <p className="text-sm text-muted-foreground mb-1">To: careers@{selectedJobForPreview?.company.toLowerCase().replace(/\s+/g, '')}.com</p>
+                <p className="text-sm text-muted-foreground">Subject: Application for {selectedJobForPreview?.position}</p>
+              </div>
+              <div className="whitespace-pre-line text-sm leading-relaxed">
+                {selectedJobForPreview && generateMockEmail(selectedJobForPreview)}
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
+                Close
+              </Button>
+              <Button>
+                Edit Email
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* CV Preview Dialog */}
+      <Dialog open={cvDialogOpen} onOpenChange={setCvDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Generated CV for {selectedJobForPreview?.position}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <div className="bg-muted/30 rounded-lg p-6 border border-border">
+              <div className="whitespace-pre-line text-sm leading-relaxed font-mono">
+                {selectedJobForPreview && generateMockCV(selectedJobForPreview)}
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCvDialogOpen(false)}>
+                Close
+              </Button>
+              <Button>
+                Edit CV
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

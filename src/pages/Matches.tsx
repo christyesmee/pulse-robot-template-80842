@@ -498,13 +498,29 @@ const Matches = () => {
                   <Sparkles className="h-5 w-5 text-primary" />
                   <AlertDescription className="ml-2">
                     <span className="font-semibold text-primary">
-                      While you were away, we found {scrapedJobs.length} new job{scrapedJobs.length !== 1 ? 's' : ''} that match your profile!
+                      While you were away, we found {scrapedJobs.filter(job => {
+                        const daysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                        return daysAgo === 0;
+                      }).length} new job{scrapedJobs.filter(job => {
+                        const daysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                        return daysAgo === 0;
+                      }).length !== 1 ? 's' : ''} that match your profile!
                     </span>
                   </AlertDescription>
                 </Alert>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {scrapedJobs.map((job, index) => {
+                {/* Added Today Section */}
+                {scrapedJobs.filter(job => {
+                  const daysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                  return daysAgo === 0;
+                }).length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold mb-4 text-foreground">✨ Added Today</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {scrapedJobs.filter(job => {
+                        const daysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                        return daysAgo === 0;
+                      }).map((job, index) => {
                     // Calculate days since posted
                     const postedDaysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
                     const postedText = postedDaysAgo === 0 ? 'today' : postedDaysAgo === 1 ? 'yesterday' : `${postedDaysAgo} days ago`;
@@ -631,9 +647,155 @@ const Matches = () => {
                         onSave={handleSaveJob}
                         onDislike={handleDislikeJob}
                       />
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
+              )}
+
+              {/* Added Previously Section */}
+              {scrapedJobs.filter(job => {
+                const daysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                return daysAgo > 0;
+              }).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 text-foreground">📋 Added Previously</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {scrapedJobs.filter(job => {
+                      const daysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                      return daysAgo > 0;
+                    }).map((job, index) => {
+                      // Calculate days since posted
+                      const postedDaysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                      const postedText = postedDaysAgo === 0 ? 'today' : postedDaysAgo === 1 ? 'yesterday' : `${postedDaysAgo} days ago`;
+
+                      // Diverse job descriptions
+                      const descriptions = [
+                        'Support the product team in building and testing new features. You will analyze user feedback, help prioritize roadmaps, and work directly with engineers to bring ideas to life. Perfect for learning the full product lifecycle.',
+                        'Assist in developing web applications using modern frameworks. Daily tasks include writing clean code, debugging issues, participating in code reviews, and learning best practices from senior developers.',
+                        'Join marketing campaigns from concept to execution. You will create social media content, analyze campaign metrics, conduct market research, and contribute creative ideas to reach target audiences.',
+                        'Help design user experiences that people love. You will create wireframes, conduct user testing, collaborate with developers, and learn industry-standard design tools while building a strong portfolio.',
+                        'Support HR operations including recruitment, onboarding, and employee engagement. You will screen candidates, organize interviews, maintain employee records, and help create a positive workplace culture.',
+                      ];
+
+                      const matchPoints = [
+                        [
+                          'Your business administration background fits their requirements',
+                          'Previous internship experience matches their expectations',
+                          'You have the analytical skills they are looking for',
+                        ],
+                        [
+                          'Your programming coursework aligns with their tech stack',
+                          'Portfolio projects demonstrate relevant skills',
+                          'Interest in continuous learning matches their culture',
+                        ],
+                        [
+                          'Communication skills stand out in your profile',
+                          'Social media experience is exactly what they need',
+                          'Creative thinking aligns with campaign-focused role',
+                        ],
+                        [
+                          'Design software proficiency matches their tools',
+                          'Your portfolio shows strong visual design sense',
+                          'User-centered approach aligns with their methodology',
+                        ],
+                        [
+                          'People skills highlighted in your CV fit perfectly',
+                          'Organizational abilities match HR coordination needs',
+                          'Interest in workplace culture aligns with their values',
+                        ],
+                      ];
+
+                      const benefits = [
+                        {
+                          workArrangement: 'Hybrid (3 days office, 2 days remote)',
+                          hasCar: false,
+                          freeLunch: true,
+                          learningBudget: '€1,000/year',
+                          officePerks: ['Modern office', 'Standing desks', 'Game room'],
+                          vacationDays: '25 days',
+                          otherBenefits: ['Pension contribution', 'Health insurance', 'Phone allowance']
+                        },
+                        {
+                          workArrangement: 'Fully remote with quarterly team meetups',
+                          hasCar: false,
+                          freeLunch: false,
+                          learningBudget: '€1,500/year',
+                          officePerks: ['Home office stipend €500', 'Co-working space access'],
+                          vacationDays: '28 days',
+                          otherBenefits: ['Latest tech equipment', 'Wellness budget €300/year']
+                        },
+                        {
+                          workArrangement: 'Office-based with flexible hours',
+                          hasCar: true,
+                          carDetails: 'Company lease car after 6 months',
+                          freeLunch: true,
+                          learningBudget: '€2,000/year',
+                          officePerks: ['Rooftop terrace', 'Gym access', 'Coffee bar'],
+                          vacationDays: '26 days',
+                          otherBenefits: ['Travel allowance', 'Team events monthly', 'Bonus scheme']
+                        },
+                        {
+                          workArrangement: 'Hybrid (2 days office, 3 days remote)',
+                          hasCar: false,
+                          freeLunch: false,
+                          learningBudget: '€750/year',
+                          officePerks: ['Creative workspace', 'Design library', 'Collaboration zones'],
+                          vacationDays: '24 days',
+                          otherBenefits: ['Software subscriptions', 'Conference tickets', 'Mentorship program']
+                        },
+                        {
+                          workArrangement: 'Office-based (9-5 with flexible start)',
+                          hasCar: false,
+                          freeLunch: true,
+                          learningBudget: '€800/year',
+                          officePerks: ['Central location', 'Free parking', 'Quiet rooms'],
+                          vacationDays: '25 days',
+                          otherBenefits: ['Training courses', 'Career coaching', 'Team building budget']
+                        },
+                      ];
+
+                      const salaries = [
+                        { monthly: '€2,000 - €2,500', yearly: '€24,000 - €30,000', notes: 'Plus holiday allowance' },
+                        { monthly: '€2,200 - €2,800', yearly: '€26,400 - €33,600', notes: 'Includes 13th month' },
+                        { monthly: '€2,500 - €3,000', yearly: '€30,000 - €36,000', notes: 'Plus performance bonus' },
+                        { monthly: '€1,800 - €2,300', yearly: '€21,600 - €27,600', notes: 'Plus travel allowance' },
+                        { monthly: '€2,100 - €2,600', yearly: '€25,200 - €31,200', notes: 'Competitive benefits package' },
+                      ];
+
+                      const jobMatch: JobMatch = {
+                        id: job.job_id,
+                        matchScore: job.match_score || 85,
+                        company: job.company,
+                        description: descriptions[index % descriptions.length],
+                        location: job.location,
+                        salary: job.salary || 'Competitive salary',
+                        postedDate: postedText,
+                        matchingPoints: matchPoints[index % matchPoints.length],
+                        salaryBreakdown: {
+                          monthly: salaries[index % salaries.length].monthly,
+                          yearly: salaries[index % salaries.length].yearly,
+                          type: 'gross' as const,
+                          notes: salaries[index % salaries.length].notes
+                        },
+                        benefits: benefits[index % benefits.length],
+                        growthOpportunities: 'Mentorship from senior team members, professional development budget, clear career progression path, and opportunities to attend industry conferences and workshops.',
+                        companyCulture: 'Collaborative and supportive work environment with flexible hours, regular team activities, and strong emphasis on work-life balance.',
+                      };
+                      
+                      return (
+                        <JobMatchCard
+                          key={job.id}
+                          job={jobMatch}
+                          onApply={handleLikeJob}
+                          onSave={handleSaveJob}
+                          onDislike={handleDislikeJob}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               </>
             ) : (
               <div className="text-center py-12">
