@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import CareerSpringNav from "@/components/CareerSpringNav";
 import JobMatchCard, { JobMatch } from "@/components/JobMatchCard";
 import ApplyModal from "@/components/ApplyModal";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
 import { fetchJobMatches, saveJob, dislikeJob } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 
@@ -69,11 +72,20 @@ const MOCK_JOBS: JobMatch[] = [
 ];
 
 const Matches = () => {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<JobMatch[]>([]);
   const [selectedJob, setSelectedJob] = useState<JobMatch | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  const handleReplaceCV = () => {
+    toast({
+      title: "Replace CV",
+      description: "Redirecting to upload page...",
+    });
+    navigate("/upload");
+  };
 
   // Fetch job matches on component mount
   useEffect(() => {
@@ -169,6 +181,19 @@ const Matches = () => {
           <p className="section-subtitle max-w-2xl mx-auto">
             We found {jobs.length} opportunities tailored to your skills and experience
           </p>
+          
+          {/* Replace CV Button */}
+          <div className="mt-6">
+            <Button
+              onClick={handleReplaceCV}
+              variant="outline"
+              size="lg"
+              className="rounded-full"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload New CV
+            </Button>
+          </div>
         </div>
 
         {/* Job Cards Grid */}

@@ -34,6 +34,10 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
       const userId = localStorage.getItem("userId") || "mock-user-123";
       const cvBlobUrl = await generateTailoredCV(userId, job.id);
       
+      // Store the CV blob URL for later use
+      localStorage.setItem("lastGeneratedCV", cvBlobUrl);
+      localStorage.setItem("lastGeneratedCVFilename", `CV_${job.company}_${job.id}.pdf`);
+      
       // Trigger download
       const link = document.createElement("a");
       link.href = cvBlobUrl;
@@ -44,7 +48,7 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
       
       toast({
         title: "CV Downloaded! 📄",
-        description: "Your tailored CV is ready",
+        description: "Your tailored CV is ready. It will be attached when you open Outlook.",
       });
     } catch (error) {
       console.error("CV generation error:", error);
@@ -89,9 +93,24 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const mailtoLink = `mailto:hiring@company.com?subject=Application for ${
-    job.company || "Position"
-  }&body=${encodeURIComponent(emailContent)}`;
+  const handleOpenOutlook = () => {
+    const cvFilename = localStorage.getItem("lastGeneratedCVFilename") || "CV.pdf";
+    
+    // Add reminder to attach CV at the end of email body
+    const emailWithAttachmentReminder = `${emailContent}\n\n---\n📎 Please attach the downloaded CV file: ${cvFilename}`;
+    
+    const mailtoLink = `mailto:hiring@company.com?subject=Application for ${
+      job.company || "Position"
+    }&body=${encodeURIComponent(emailWithAttachmentReminder)}`;
+    
+    // Open in default mail client (will use Outlook if it's the default)
+    window.location.href = mailtoLink;
+    
+    toast({
+      title: "Opening Outlook Desktop",
+      description: "Don't forget to attach your downloaded CV to the email!",
+    });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -189,12 +208,18 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
                 </Button>
               </div>
 
-              <Button asChild size="lg" className="w-full">
-                <a href={mailtoLink}>
-                  <Mail className="w-5 h-5 mr-2" />
-                  Open in Outlook (with New CV)
-                </a>
+              <Button 
+                onClick={handleOpenOutlook}
+                size="lg" 
+                className="w-full"
+              >
+                <Mail className="w-5 h-5 mr-2" />
+                Open in Outlook Desktop
               </Button>
+              
+              <p className="text-xs text-center text-gray-500 mt-2">
+                📎 Make sure to attach your downloaded CV file to the email
+              </p>
             </div>
           )}
         </div>

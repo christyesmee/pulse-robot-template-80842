@@ -39,10 +39,11 @@ const UploadCV = () => {
       
       toast({
         title: "CV Scanned Successfully! 🌱",
-        description: "Finding your perfect matches...",
+        description: "Let's build your profile...",
       });
       
-      navigate("/matches");
+      // Navigate to onboarding flow
+      navigate("/onboarding/step1");
     } catch (error) {
       console.error("CV upload error:", error);
       toast({
