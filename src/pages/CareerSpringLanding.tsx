@@ -30,10 +30,13 @@ const ScrollSection = ({ children, delay = 0 }: { children: React.ReactNode; del
 const CareerSpringLanding = () => {
   const navigate = useNavigate();
   const [cvUploaded, setCvUploaded] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
   useEffect(() => {
     const hasUploadedCV = localStorage.getItem("cvUploaded") === "true";
+    const hasCompletedOnboarding = localStorage.getItem("onboarding_completed") === "true";
     setCvUploaded(hasUploadedCV);
+    setOnboardingCompleted(hasCompletedOnboarding);
   }, []);
 
   return (
@@ -53,7 +56,8 @@ const CareerSpringLanding = () => {
               className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold leading-tight opacity-0 animate-fade-in mb-6 max-w-5xl" 
               style={{ animationDelay: "0.3s" }}
             >
-              Stop decoding job descriptions.{" "}
+              Stop decoding job descriptions.
+              <br />
               <span className="text-primary">Start your career.</span>
             </h1>
             
@@ -65,7 +69,7 @@ const CareerSpringLanding = () => {
             </p>
             
             <div 
-              className="opacity-0 animate-fade-in" 
+              className="opacity-0 animate-fade-in flex flex-col sm:flex-row gap-4 items-center justify-center" 
               style={{ animationDelay: "0.7s" }}
             >
               <Button
@@ -76,6 +80,17 @@ const CareerSpringLanding = () => {
                 {cvUploaded ? "Go to My Job Matches" : "Activate Your AI Agent"}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
+              
+              {onboardingCompleted && (
+                <Button
+                  onClick={() => navigate("/profile")}
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-8 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
+                >
+                  My Profile
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -214,14 +229,27 @@ const CareerSpringLanding = () => {
           </ScrollSection>
 
           <ScrollSection delay={200}>
-            <Button
-              onClick={() => navigate(cvUploaded ? "/matches" : "/upload")}
-              size="lg"
-              className="text-lg px-10 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-xl"
-            >
-              {cvUploaded ? "View My Dashboard" : "Get Started (It's Free)"}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <Button
+                onClick={() => navigate(cvUploaded ? "/matches" : "/upload")}
+                size="lg"
+                className="text-lg px-10 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-xl"
+              >
+                {cvUploaded ? "View My Dashboard" : "Get Started (It's Free)"}
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              
+              {onboardingCompleted && (
+                <Button
+                  onClick={() => navigate("/profile")}
+                  size="lg"
+                  variant="outline"
+                  className="text-lg px-10 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-xl"
+                >
+                  My Profile
+                </Button>
+              )}
+            </div>
           </ScrollSection>
         </div>
       </section>
