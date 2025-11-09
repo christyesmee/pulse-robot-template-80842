@@ -171,6 +171,11 @@ const OnboardingStep3 = () => {
             <p className="text-base text-foreground/60 max-w-2xl mx-auto">
               Based on your experiences, you've built valuable skills. Let's tag them so we can match you.
             </p>
+            {selectedSkills.length > 0 && (
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full">
+                <span className="font-semibold">{selectedSkills.length} skills selected</span>
+              </div>
+            )}
           </div>
 
           {/* Skills from Experiences */}
@@ -181,10 +186,10 @@ const OnboardingStep3 = () => {
             return (
               <div key={expType} className="glass-card p-8 space-y-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-1">
+                  <h2 className="text-xl font-display font-semibold mb-1">
                     Based on your '{detail || suggestion.label}'...
                   </h2>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-foreground/70 text-sm">
                     Click to add these skills to your profile
                   </p>
                 </div>
@@ -212,10 +217,10 @@ const OnboardingStep3 = () => {
           {/* Tools & Software */}
           <div className="glass-card p-8 space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-display font-semibold mb-2">
                 Finally, what tools or software do you know?
               </h2>
-              <p className="text-gray-600">
+              <p className="text-foreground/70">
                 Start typing to add skills like Python, Excel, Canva, SQL, etc.
               </p>
             </div>
@@ -295,31 +300,44 @@ const OnboardingStep3 = () => {
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between">
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={handleBack}
-              className="text-lg px-8 py-6 rounded-xl"
-              disabled={isSubmitting}
-            >
-              ← Back
-            </Button>
-            <Button
-              size="lg"
-              onClick={handleFinish}
-              disabled={selectedSkills.length === 0 || isSubmitting}
-              className="text-lg px-8 py-6 rounded-xl"
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Building your profile...
-                </>
-              ) : (
-                "All done! See my job matches →"
-              )}
-            </Button>
+          <div className="space-y-4">
+            {selectedSkills.length === 0 && (
+              <div className="bg-primary/10 border-2 border-primary/30 rounded-lg p-4 text-center">
+                <p className="text-sm font-semibold text-primary mb-1">
+                  👆 Please select at least one skill above to continue
+                </p>
+                <p className="text-xs text-foreground/70">
+                  Click on the skill buttons to add them to your profile
+                </p>
+              </div>
+            )}
+            
+            <div className="flex justify-between">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={handleBack}
+                className="text-lg px-8 py-6 rounded-xl"
+                disabled={isSubmitting}
+              >
+                ← Back
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleFinish}
+                disabled={selectedSkills.length === 0 || isSubmitting}
+                className="text-lg px-8 py-6 rounded-xl relative"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Building your profile...
+                  </>
+                ) : (
+                  "All done! See my job matches →"
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </main>
