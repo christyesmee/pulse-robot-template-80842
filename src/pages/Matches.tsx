@@ -203,6 +203,9 @@ const Matches = () => {
 
       if (error) throw error;
 
+      // Remove job from scraped jobs list
+      setScrapedJobs(prev => prev.filter(j => j.job_id !== job.id));
+
       toast({
         title: "Liked! 💚",
         description: `${job.company} added to your liked jobs`,
@@ -227,9 +230,12 @@ const Matches = () => {
   };
 
   const handleDislikeJob = async (job: JobMatch) => {
+    // Remove job from scraped jobs list when disliked
+    setScrapedJobs(prev => prev.filter(j => j.job_id !== job.id));
+    
     toast({
       title: "Removed",
-      description: `We'll show you similar roles`,
+      description: "We'll show you similar roles",
     });
   };
 
