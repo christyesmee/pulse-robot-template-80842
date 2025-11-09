@@ -252,7 +252,7 @@ const Matches = () => {
 
         <Tabs defaultValue="new-jobs" className="w-full">
           <div className="sticky top-0 z-10 bg-white pb-4 border-b mb-8">
-            <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-5 gap-2">
+            <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 gap-2">
               <TabsTrigger value="new-jobs" className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4" />
                 New Jobs ({scrapedJobs.length})
