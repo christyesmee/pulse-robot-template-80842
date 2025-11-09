@@ -4,43 +4,43 @@ import { RefreshCw } from "lucide-react";
 const jargonExamples = [
   {
     before: "Fast-paced, dynamic environment",
-    after: "You will be busy. Priorities change quickly, sometimes multiple times a day. Not a quiet desk job."
+    after: "You'll be busy. Priorities change often."
   },
   {
     before: "Manage key stakeholders",
-    after: "Keep other people updated via emails and meetings. Get their approval for your work."
+    after: "Send updates and get approvals from other teams."
   },
   {
     before: "We're looking for a self-starter",
-    after: "You won't be micromanaged. Your boss gives you a goal, you figure out how to do it."
+    after: "Figure things out on your own. Less hand-holding."
   },
   {
     before: "Must be willing to wear many hats",
-    after: "Your job description is a suggestion. You'll do tasks outside your core role. Great for learning, but can be chaotic."
+    after: "You'll do tasks outside your job description."
   },
   {
     before: "Ability to hit the ground running",
-    after: "Very little training. You're expected to have the skills and be productive from week one."
+    after: "Little training. Start being productive immediately."
   },
   {
     before: "Strong communication skills",
-    after: "Write clear emails. Explain complex ideas simply. Ask for help when stuck. Listen in meetings."
+    after: "Write clear emails and explain ideas simply."
   },
   {
     before: "Comfortable with ambiguity",
-    after: "Instructions will be vague. You'll need to ask smart questions to get clarity and figure things out."
+    after: "Vague instructions. You ask questions to clarify."
   },
   {
     before: "Results-driven",
-    after: "Your success is measured by numbers, not effort. You'll track metrics like '10% more clicks' or '15 tickets per day.'"
+    after: "Measured by numbers, not effort or hours worked."
   },
   {
     before: "Work cross-functionally",
-    after: "You'll work with people from completely different departments like Engineering, Sales, or Design."
+    after: "Collaborate with different departments regularly."
   },
   {
     before: "Significant growth opportunities",
-    after: "Could mean real promotions OR just more work without raises. Ask: 'What does a career path look like here?'"
+    after: "Could mean promotions or just more work. Ask!"
   }
 ];
 
@@ -108,7 +108,7 @@ export const JargonDecoderCard = () => {
         className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-semibold text-primary bg-primary/10 rounded-full hover:bg-primary/20 transition-all duration-200 hover:scale-105"
       >
         <RefreshCw className="w-4 h-4" />
-        Try another example ({currentIndex + 1}/{jargonExamples.length})
+        Try another example
       </button>
     </div>
   );

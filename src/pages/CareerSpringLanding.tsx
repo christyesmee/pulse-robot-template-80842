@@ -150,7 +150,7 @@ const CareerSpringLanding = () => {
                 <div className="flex items-center justify-center gap-3 mb-6">
                   <Zap className="w-8 h-8 text-primary animate-pulse" />
                   <h3 className="text-3xl md:text-4xl font-display font-bold text-center">
-                    Stop Getting Lost in Translation
+                    We translate the jargon
                   </h3>
                   <Zap className="w-8 h-8 text-primary animate-pulse" />
                 </div>
