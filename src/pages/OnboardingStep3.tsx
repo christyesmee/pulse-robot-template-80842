@@ -108,39 +108,20 @@ const OnboardingStep3 = () => {
   };
 
   const handleFinish = async () => {
-    if (selectedSkills.length === 0) {
-      toast({
-        title: "Please add skills first",
-        description: "Select at least one skill from the suggestions or add your own",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      // Store all onboarding data
+      // Store all onboarding data (allow empty selections)
       localStorage.setItem("onboarding_skills", JSON.stringify(selectedSkills));
       localStorage.setItem("onboarding_tools", JSON.stringify(tools));
       localStorage.setItem("onboarding_completed", "true");
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast({
-        title: "Profile Complete! 🎉",
-        description: "Finding your perfect job matches...",
-      });
+      // Optional small delay to simulate save
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       navigate("/matches");
     } catch (error) {
       console.error("Error completing onboarding:", error);
-      toast({
-        title: "Something went wrong",
-        description: "Please try again",
-        variant: "destructive",
-      });
       setIsSubmitting(false);
     }
   };
@@ -300,44 +281,31 @@ const OnboardingStep3 = () => {
           )}
 
           {/* Navigation Buttons */}
-          <div className="space-y-4">
-            {selectedSkills.length === 0 && (
-              <div className="bg-primary/10 border-2 border-primary/30 rounded-lg p-4 text-center">
-                <p className="text-sm font-semibold text-primary mb-1">
-                  👆 Please select at least one skill above to continue
-                </p>
-                <p className="text-xs text-foreground/70">
-                  Click on the skill buttons to add them to your profile
-                </p>
-              </div>
-            )}
-            
-            <div className="flex justify-between">
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={handleBack}
-                className="text-lg px-8 py-6 rounded-xl"
-                disabled={isSubmitting}
-              >
-                ← Back
-              </Button>
-              <Button
-                size="lg"
-                onClick={handleFinish}
-                disabled={selectedSkills.length === 0 || isSubmitting}
-                className="text-lg px-8 py-6 rounded-xl relative"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Building your profile...
-                  </>
-                ) : (
-                  "All done! See my job matches →"
-                )}
-              </Button>
-            </div>
+          <div className="flex justify-between">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleBack}
+              className="text-lg px-8 py-6 rounded-xl"
+              disabled={isSubmitting}
+            >
+              ← Back
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleFinish}
+              disabled={isSubmitting}
+              className="text-lg px-8 py-6 rounded-xl"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Building your profile...
+                </>
+              ) : (
+                "All done! See my job matches →"
+              )}
+            </Button>
           </div>
         </div>
       </main>
