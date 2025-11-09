@@ -251,28 +251,30 @@ const Matches = () => {
         </div>
 
         <Tabs defaultValue="new-jobs" className="w-full">
-          <TabsList className="w-full md:w-auto mb-8 grid grid-cols-2 md:grid-cols-5 gap-2">
-            <TabsTrigger value="new-jobs" className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4" />
-              New Jobs ({scrapedJobs.length})
-            </TabsTrigger>
-            <TabsTrigger value="cart" className="flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4" />
-              Cart ({cartJobs.length})
-            </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              Applications ({applications.length})
-            </TabsTrigger>
-            <TabsTrigger value="interviews" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Interviews ({interviewApplications.length})
-            </TabsTrigger>
-            <TabsTrigger value="learning" className="flex items-center gap-2">
-              <XCircle className="w-4 h-4" />
-              Learning ({rejectedApplications.length})
-            </TabsTrigger>
-          </TabsList>
+          <div className="sticky top-0 z-10 bg-white pb-4 border-b mb-8">
+            <TabsList className="w-full md:w-auto grid grid-cols-2 md:grid-cols-5 gap-2">
+              <TabsTrigger value="new-jobs" className="flex items-center gap-2">
+                <Briefcase className="w-4 h-4" />
+                New Jobs ({scrapedJobs.length})
+              </TabsTrigger>
+              <TabsTrigger value="cart" className="flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4" />
+                Cart ({cartJobs.length})
+              </TabsTrigger>
+              <TabsTrigger value="applications" className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Applications ({applications.length})
+              </TabsTrigger>
+              <TabsTrigger value="interviews" className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Interviews ({interviewApplications.length})
+              </TabsTrigger>
+              <TabsTrigger value="learning" className="flex items-center gap-2">
+                <XCircle className="w-4 h-4" />
+                Learning ({rejectedApplications.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* New Jobs Tab */}
           <TabsContent value="new-jobs">
