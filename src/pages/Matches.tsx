@@ -201,7 +201,7 @@ const Matches = () => {
       if (error) throw error;
 
       toast({
-        title: "Added to Cart! 🛒",
+        title: "Added to Queue! 📋",
         description: `${job.company}`,
       });
 
@@ -240,8 +240,8 @@ const Matches = () => {
       if (error) throw error;
 
       toast({
-        title: "Removed from Cart",
-        description: "Job removed from your cart",
+        title: "Removed from Queue",
+        description: "Job removed from your queue",
       });
 
       if (userId) loadData(userId);
@@ -438,10 +438,10 @@ const Matches = () => {
         <div className="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
-              AI Job Hunter
+              GradFlow
             </h1>
             <p className="text-foreground/70">
-              Your AI agent finds jobs daily. Add to cart and apply automatically.
+              Your AI agent finds jobs daily. Add to your queue and apply automatically.
             </p>
           </div>
           
@@ -465,7 +465,7 @@ const Matches = () => {
               </TabsTrigger>
               <TabsTrigger value="cart" className="flex-1 flex items-center gap-2 justify-center">
                 <ShoppingCart className="w-4 h-4" />
-                Cart ({cartJobs.length})
+                Queue ({cartJobs.length})
               </TabsTrigger>
               <TabsTrigger value="applications" className="flex-1 flex items-center gap-2 justify-center">
                 <CheckCircle className="w-4 h-4" />
@@ -492,6 +492,10 @@ const Matches = () => {
             ) : scrapedJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {scrapedJobs.map((job) => {
+                  // Calculate days since posted
+                  const postedDaysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                  const postedText = postedDaysAgo === 0 ? 'today' : postedDaysAgo === 1 ? 'yesterday' : `${postedDaysAgo} days ago`;
+
                   const jobMatch: JobMatch = {
                     id: job.job_id,
                     matchScore: job.match_score || 85,
@@ -499,7 +503,27 @@ const Matches = () => {
                     description: job.description || 'Work on exciting projects and gain hands-on experience. Daily tasks include collaborating with team members, attending stand-ups, and contributing to real-world solutions.',
                     location: job.location,
                     salary: job.salary || 'Competitive salary',
-                    matchReason: 'Your profile aligns with this opportunity based on your skills, experience, and career goals.',
+                    postedDate: postedText,
+                    matchingPoints: [
+                      'Your education background aligns with the role requirements',
+                      'Your skills match the technical stack they use',
+                      'The career level fits your experience stage'
+                    ],
+                    salaryBreakdown: {
+                      monthly: job.salary?.includes('month') ? job.salary : '€2,000 - €2,500',
+                      yearly: '€24,000 - €30,000',
+                      type: 'gross' as const,
+                      notes: 'Plus holiday allowance'
+                    },
+                    benefits: {
+                      workArrangement: 'Hybrid (3 days office, 2 days remote)',
+                      hasCar: false,
+                      freeLunch: true,
+                      learningBudget: '€1,000/year',
+                      officePerks: ['Modern office', 'Standing desks', 'Game room'],
+                      vacationDays: '25 days',
+                      otherBenefits: ['Pension contribution', 'Health insurance', 'Phone allowance']
+                    },
                     growthOpportunities: 'Mentorship from senior team members, professional development budget, clear career progression path, and opportunities to attend industry conferences and workshops.',
                     companyCulture: 'Collaborative and supportive work environment with flexible hours, hybrid work options, regular team activities, and strong emphasis on work-life balance.',
                   };
@@ -524,13 +548,13 @@ const Matches = () => {
             )}
           </TabsContent>
 
-          {/* Cart Tab */}
+          {/* Application Queue Tab */}
           <TabsContent value="cart">
             {cartJobs.length > 0 ? (
               <>
                 <div className="mb-6 flex justify-between items-center bg-primary/10 p-4 rounded-lg">
                   <div>
-                    <p className="font-semibold">{cartJobs.length} jobs in cart</p>
+                    <p className="font-semibold">{cartJobs.length} jobs in your queue</p>
                     <p className="text-sm text-foreground/70">Ready to apply automatically</p>
                   </div>
                   <Button 
@@ -554,7 +578,7 @@ const Matches = () => {
                       company={job.company}
                       status="cart"
                       onAction={() => handleRemoveFromCart(job.id)}
-                      actionLabel="Remove from Cart"
+                      actionLabel="Remove from Queue"
                     />
                   ))}
                 </div>
@@ -562,7 +586,7 @@ const Matches = () => {
             ) : (
               <div className="text-center py-12">
                 <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl text-foreground/70 mb-2">Your cart is empty</p>
+                <p className="text-xl text-foreground/70 mb-2">Your queue is empty</p>
                 <p className="text-foreground/60">Add jobs from the New Jobs tab to apply automatically</p>
               </div>
             )}
