@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { uploadCV } from "@/services/api";
 import { AppHeader } from "@/components/AppHeader";
@@ -39,13 +39,18 @@ const UploadCV = () => {
       localStorage.setItem("userId", result.userId);
       localStorage.setItem("cvUploaded", "true");
       
+      // Store extracted CV data for pre-filling profile
+      if (result.extractedData) {
+        localStorage.setItem("cvExtractedData", JSON.stringify(result.extractedData));
+      }
+      
       toast({
         title: "CV Scanned Successfully! 🌱",
-        description: "Let's build your profile...",
+        description: "Your information has been extracted. You can review and add more details...",
       });
       
-      // Navigate to onboarding flow
-      navigate("/onboarding/step1");
+      // Navigate to profile page
+      navigate("/profile");
     } catch (error) {
       console.error("CV upload error:", error);
       toast({
@@ -56,6 +61,16 @@ const UploadCV = () => {
     } finally {
       setIsScanning(false);
     }
+  };
+
+  const handleSkipCV = () => {
+    // Mark that user chose to skip CV upload
+    localStorage.setItem("cvUploaded", "false");
+    toast({
+      title: "No problem!",
+      description: "You can fill in your information manually.",
+    });
+    navigate("/profile");
   };
 
   return (
@@ -76,10 +91,10 @@ const UploadCV = () => {
               <span className="text-sm font-medium text-gray-700">Upload CV</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              Upload Your CV to Get Started
+              Upload Your CV or LinkedIn Profile
             </h1>
             <p className="text-xl text-gray-700 opacity-0 animate-fade-in" style={{ animationDelay: "0.5s" }}>
-              Let us analyze your skills and find the perfect opportunities for you
+              We'll extract your information and pre-fill your profile. Don't have one? No problem - just fill it in manually.
             </p>
           </div>
 
@@ -129,7 +144,7 @@ const UploadCV = () => {
             </label>
 
             {/* Upload Button */}
-            <div className="pt-6">
+            <div className="pt-6 space-y-4">
               <Button
                 size="lg"
                 onClick={handleUpload}
@@ -144,9 +159,29 @@ const UploadCV = () => {
                 ) : (
                   <>
                     <Upload className="w-5 h-5 mr-2" />
-                    Upload & Scan
+                    Upload & Scan CV
                   </>
                 )}
+              </Button>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">or</span>
+                </div>
+              </div>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={handleSkipCV}
+                disabled={isScanning}
+                className="w-full text-lg py-6 rounded-xl"
+              >
+                <ArrowRight className="w-5 h-5 mr-2" />
+                Skip and Fill Manually
               </Button>
             </div>
             </div>

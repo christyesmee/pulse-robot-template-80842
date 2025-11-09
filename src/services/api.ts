@@ -6,17 +6,42 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 // Toggle between mock and real API
 const USE_MOCK_API = true; // Set to false when backend is ready
 
+export interface CVParseResult {
+  userId: string;
+  success: boolean;
+  extractedData?: {
+    fields?: string[];
+    status?: string;
+    experiences?: Array<{ type: string; details: string }>;
+    skills?: string[];
+    tools?: string[];
+  };
+}
+
 /**
  * Upload and parse CV
  * @param file - PDF file to upload
- * @returns Parsed CV data including user ID
+ * @returns Parsed CV data including user ID and extracted profile information
  */
-export const uploadCV = async (file: File): Promise<{ userId: string; success: boolean }> => {
+export const uploadCV = async (file: File): Promise<CVParseResult> => {
   if (USE_MOCK_API) {
-    // Mock implementation
+    // Mock implementation - simulate CV parsing
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ userId: "mock-user-123", success: true });
+        resolve({ 
+          userId: "mock-user-123", 
+          success: true,
+          extractedData: {
+            fields: ["Technology", "Business"],
+            status: "student",
+            experiences: [
+              { type: "education", details: "BSc Computer Science, University of Manchester" },
+              { type: "work", details: "Part-time Barista at Coffee House - Customer service and team collaboration" }
+            ],
+            skills: ["Communication", "Problem Solving", "Teamwork"],
+            tools: ["Microsoft Office", "Google Workspace"]
+          }
+        });
       }, 2000);
     });
   }

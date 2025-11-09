@@ -57,6 +57,38 @@ const Profile = () => {
 
   // Load existing data
   useEffect(() => {
+    // First, check if there's CV extracted data to pre-fill
+    const cvExtractedData = localStorage.getItem("cvExtractedData");
+    if (cvExtractedData) {
+      try {
+        const extractedData = JSON.parse(cvExtractedData);
+        
+        // Pre-fill from CV extraction
+        if (extractedData.fields) setSelectedFields(extractedData.fields);
+        if (extractedData.status) setStatus(extractedData.status);
+        if (extractedData.experiences) {
+          const experiencesMap: Record<string, string> = {};
+          extractedData.experiences.forEach((exp: { type: string; details: string }) => {
+            experiencesMap[exp.type] = exp.details;
+          });
+          setSelectedExperiences(experiencesMap);
+        }
+        if (extractedData.skills) setSelectedSkills(extractedData.skills);
+        if (extractedData.tools) setTools(extractedData.tools);
+        
+        toast({
+          title: "Profile Pre-filled! ✨",
+          description: "We've extracted information from your CV. Review and add more details below.",
+        });
+        
+        // Clear the extracted data so it doesn't pre-fill again on next visit
+        localStorage.removeItem("cvExtractedData");
+      } catch (error) {
+        console.error("Error loading CV extracted data:", error);
+      }
+    }
+    
+    // Then load any saved profile data (which will override CV data if user saved changes)
     const storedCvName = localStorage.getItem("cvFileName");
     const storedFields = JSON.parse(localStorage.getItem("onboarding_fields") || "[]");
     const storedStatus = localStorage.getItem("onboarding_status") || "";
@@ -64,13 +96,19 @@ const Profile = () => {
     const storedSkills = JSON.parse(localStorage.getItem("onboarding_skills") || "[]");
     const storedTools = JSON.parse(localStorage.getItem("onboarding_tools") || "[]");
     
-    if (storedCvName) setCvFileName(storedCvName);
-    setSelectedFields(storedFields);
-    setStatus(storedStatus);
-    setSelectedExperiences(storedExperiences);
-    setSelectedSkills(storedSkills);
-    setTools(storedTools);
-  }, []);
+    // Only load saved data if no CV extracted data was loaded
+    if (!cvExtractedData) {
+      if (storedCvName) setCvFileName(storedCvName);
+      if (storedFields.length > 0) setSelectedFields(storedFields);
+      if (storedStatus) setStatus(storedStatus);
+      if (Object.keys(storedExperiences).length > 0) setSelectedExperiences(storedExperiences);
+      if (storedSkills.length > 0) setSelectedSkills(storedSkills);
+      if (storedTools.length > 0) setTools(storedTools);
+    } else {
+      // Just load CV name if extracted data was present
+      if (storedCvName) setCvFileName(storedCvName);
+    }
+  }, [toast]);
 
   // CV Upload Handler
   const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,6 +202,7 @@ const Profile = () => {
     localStorage.setItem("onboarding_experiences", JSON.stringify(selectedExperiences));
     localStorage.setItem("onboarding_skills", JSON.stringify(selectedSkills));
     localStorage.setItem("onboarding_tools", JSON.stringify(tools));
+    localStorage.setItem("onboarding_completed", "true");
 
     toast({
       title: "Profile Updated! ✨",
@@ -200,7 +239,10 @@ const Profile = () => {
         <div className="space-y-8">
           {/* CV Upload Section */}
           <Card className="glass-card p-8">
-            <h2 className="text-2xl font-display font-bold mb-6">CV / Resume</h2>
+            <h2 className="text-2xl font-display font-bold mb-2">CV / Resume</h2>
+            <p className="text-foreground/70 mb-6">
+              Upload your CV to auto-fill your profile, or fill in the information manually below.
+            </p>
             
             {cvFileName ? (
               <div className="bg-primary/10 border-2 border-primary/30 rounded-xl p-6 flex items-center justify-between">
