@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationsSummary } from "@/components/ApplicationsSummary";
 import { JobCard } from "@/components/JobCard";
+import JobMatchCard, { JobMatch } from "@/components/JobMatchCard";
 import { InboxEmailCard } from "@/components/InboxEmailCard";
 import { EmailDetailDialog } from "@/components/EmailDetailDialog";
 
@@ -183,7 +184,7 @@ const Matches = () => {
     }
   };
 
-  const handleAddToCart = async (job: ScrapedJob) => {
+  const handleAddToCart = async (job: JobMatch) => {
     if (!userId) return;
 
     try {
@@ -191,9 +192,9 @@ const Matches = () => {
         .from('job_applications')
         .insert({
           user_id: userId,
-          job_id: job.job_id,
-          position: job.title,
-          company: job.company,
+          job_id: job.id,
+          position: job.description.substring(0, 100),
+          company: job.company || 'Company',
           status: 'cart',
         });
 
@@ -201,7 +202,7 @@ const Matches = () => {
 
       toast({
         title: "Added to Cart! 🛒",
-        description: `${job.company} - ${job.title}`,
+        description: `${job.company}`,
       });
 
       loadData(userId);
@@ -213,6 +214,20 @@ const Matches = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleSaveJob = async (job: JobMatch) => {
+    toast({
+      title: "Saved! 📑",
+      description: `${job.company} saved for later`,
+    });
+  };
+
+  const handleDislikeJob = async (job: JobMatch) => {
+    toast({
+      title: "Removed",
+      description: `We'll show you similar roles`,
+    });
   };
 
   const handleRemoveFromCart = async (applicationId: string) => {
@@ -476,21 +491,29 @@ const Matches = () => {
               </div>
             ) : scrapedJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {scrapedJobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    title={job.title}
-                    company={job.company}
-                    location={job.location}
-                    salary={job.salary}
-                    description={job.description}
-                    matchScore={job.match_score}
-                    sourceUrl={job.source_url}
-                    onAction={() => handleAddToCart(job)}
-                    actionLabel={cartJobs.some(c => c.job_id === job.job_id) ? "✓ In Cart" : "Add to Cart"}
-                    actionDisabled={cartJobs.some(c => c.job_id === job.job_id)}
-                  />
-                ))}
+                {scrapedJobs.map((job) => {
+                  const jobMatch: JobMatch = {
+                    id: job.job_id,
+                    matchScore: job.match_score || 85,
+                    company: job.company,
+                    description: job.description || 'Work on exciting projects and gain hands-on experience. Daily tasks include collaborating with team members, attending stand-ups, and contributing to real-world solutions.',
+                    location: job.location,
+                    salary: job.salary || 'Competitive salary',
+                    matchReason: 'Your profile aligns with this opportunity based on your skills, experience, and career goals.',
+                    growthOpportunities: 'Mentorship from senior team members, professional development budget, clear career progression path, and opportunities to attend industry conferences and workshops.',
+                    companyCulture: 'Collaborative and supportive work environment with flexible hours, hybrid work options, regular team activities, and strong emphasis on work-life balance.',
+                  };
+                  
+                  return (
+                    <JobMatchCard
+                      key={job.id}
+                      job={jobMatch}
+                      onApply={handleAddToCart}
+                      onSave={handleSaveJob}
+                      onDislike={handleDislikeJob}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-12">

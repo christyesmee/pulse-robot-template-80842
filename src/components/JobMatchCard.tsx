@@ -11,6 +11,8 @@ export interface JobMatch {
   company?: string;
   salary?: string;
   matchReason?: string;
+  growthOpportunities?: string;
+  companyCulture?: string;
 }
 
 interface JobMatchCardProps {
@@ -38,42 +40,65 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
         {job.matchScore}% Match
       </Badge>
 
-      {/* Company Name (if available) */}
+      {/* Company Name */}
       {job.company && (
-        <p className="text-sm font-semibold text-muted-foreground mb-2">{job.company}</p>
+        <h2 className="text-xl font-bold text-foreground mb-1">{job.company}</h2>
       )}
 
-      {/* Salary */}
-      {job.salary && (
-        <p className="text-lg font-bold text-primary mb-4 mt-8">{job.salary}</p>
-      )}
-
-      {/* Description */}
-      <div className="mb-4">
-        <h3 className="text-lg font-bold text-foreground mb-3">
-          What you'll actually do:
-        </h3>
-        <p className="text-muted-foreground leading-relaxed">{job.description}</p>
+      {/* Location */}
+      <div className="flex items-center gap-2 text-muted-foreground mb-4">
+        <MapPin className="w-4 h-4" />
+        <span className="text-sm">{job.location}</span>
       </div>
+
+      {/* Salary - Prominent Display */}
+      {job.salary && (
+        <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+          <p className="text-sm text-muted-foreground mb-1">Salary Range</p>
+          <p className="text-2xl font-bold text-primary">{job.salary}</p>
+        </div>
+      )}
+
+      {/* What You'll Actually Do */}
+      <div className="mb-5">
+        <h3 className="text-base font-bold text-foreground mb-2 flex items-center gap-2">
+          <span className="text-primary">📋</span> What you'll actually do
+        </h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{job.description}</p>
+      </div>
+
+      {/* Growth Opportunities */}
+      {job.growthOpportunities && (
+        <div className="mb-5">
+          <h3 className="text-base font-bold text-foreground mb-2 flex items-center gap-2">
+            <span className="text-primary">📈</span> Growth & Learning
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">{job.growthOpportunities}</p>
+        </div>
+      )}
+
+      {/* Company Culture */}
+      {job.companyCulture && (
+        <div className="mb-5">
+          <h3 className="text-base font-bold text-foreground mb-2 flex items-center gap-2">
+            <span className="text-primary">🌟</span> Culture & Work-Life Balance
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">{job.companyCulture}</p>
+        </div>
+      )}
 
       {/* Match Reason */}
       {job.matchReason && (
-        <div className="mb-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
+        <div className="mb-5 p-4 bg-primary/5 rounded-lg border border-primary/10">
           <h4 className="text-sm font-semibold text-primary mb-2">
-            Why this fits your profile:
+            Why this fits your profile
           </h4>
           <p className="text-sm text-muted-foreground leading-relaxed">{job.matchReason}</p>
         </div>
       )}
 
-      {/* Location */}
-      <div className="flex items-center gap-2 text-muted-foreground mb-6">
-        <MapPin className="w-4 h-4" />
-        <span className="text-sm">{job.location}</span>
-      </div>
-
       {/* Action Buttons */}
-      <div className="flex gap-3 pt-4 border-t">
+      <div className="flex gap-3 pt-4 border-t border-border">
         <Button
           onClick={() => onApply(job)}
           className="flex-1"
@@ -93,7 +118,7 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
           onClick={() => onDislike(job)}
           variant="outline"
           size="lg"
-          className="px-4 hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+          className="px-4 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
         >
           <X className="w-5 h-5" />
         </Button>
