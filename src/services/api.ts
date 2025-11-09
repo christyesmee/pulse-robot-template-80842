@@ -125,11 +125,13 @@ export const fetchJobMatches = async (userId: string): Promise<JobMatch[]> => {
  */
 export const generateTailoredCV = async (userId: string, jobId: string): Promise<string> => {
   if (USE_MOCK_API) {
-    // Mock implementation - return a fake blob URL
+    // Mock implementation - return a real Blob URL (valid PDF placeholder)
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve("mock-cv-blob-url");
-      }, 2000);
+        const minimalPdf = `%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] >>\nendobj\nxref\n0 4\n0000000000 65535 f \n0000000010 00000 n \n0000000067 00000 n \n0000000126 00000 n \ntrailer\n<< /Root 1 0 R /Size 4 >>\nstartxref\n185\n%%EOF`;
+        const blob = new Blob([minimalPdf], { type: "application/pdf" });
+        resolve(URL.createObjectURL(blob));
+      }, 800);
     });
   }
 

@@ -47,8 +47,8 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
       document.body.removeChild(link);
       
       toast({
-        title: "CV Downloaded! 📄",
-        description: "Your tailored CV is ready. It will be attached when you open Outlook.",
+        title: "CV downloaded",
+        description: "Your tailored CV is saved locally. Attach it in the email draft.",
       });
     } catch (error) {
       console.error("CV generation error:", error);
@@ -94,21 +94,30 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
   };
 
   const handleOpenOutlook = () => {
+    const subject = `Application for ${job.company || "Position"}`;
     const cvFilename = localStorage.getItem("lastGeneratedCVFilename") || "CV.pdf";
-    
-    // Add reminder to attach CV at the end of email body
-    const emailWithAttachmentReminder = `${emailContent}\n\n---\n📎 Please attach the downloaded CV file: ${cvFilename}`;
-    
-    const mailtoLink = `mailto:hiring@company.com?subject=Application for ${
-      job.company || "Position"
-    }&body=${encodeURIComponent(emailWithAttachmentReminder)}`;
-    
-    // Open in default mail client (will use Outlook if it's the default)
-    window.location.href = mailtoLink;
-    
+
+    // No automatic attachment (not supported). Add a friendly reminder instead.
+    const body = `${emailContent}\n\n---\nPlease attach your CV: ${cvFilename}`;
+
+    const outlookLink = `ms-outlook:compose?to=hiring@company.com&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailtoLink = `mailto:hiring@company.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // Try opening Outlook Desktop first
+    const a = document.createElement("a");
+    a.href = outlookLink;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Fallback to default email handler if Outlook protocol isn't available
+    setTimeout(() => {
+      window.location.href = mailtoLink;
+    }, 400);
+
     toast({
-      title: "Opening Outlook Desktop",
-      description: "Don't forget to attach your downloaded CV to the email!",
+      title: "Opening email client",
+      description: "If Outlook Desktop is installed, it will open. Otherwise your default email app will.",
     });
   };
 
