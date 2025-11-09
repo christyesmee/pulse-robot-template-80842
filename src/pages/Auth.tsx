@@ -15,7 +15,6 @@ const Auth = () => {
   const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   
   // Form states
   const [email, setEmail] = useState("");
@@ -114,53 +113,22 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth`
-          }
-        });
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast({
-              title: "Account Exists",
-              description: "This email is already registered. Try logging in instead.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Sign Up Failed",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
-        } else {
-          toast({
-            title: "Account Created! 🎉",
-            description: "Welcome! Let's set up your profile.",
-          });
-        }
+      if (error) {
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        toast({
+          title: "Welcome Back! 👋",
+          description: "Successfully logged in.",
         });
-
-        if (error) {
-          toast({
-            title: "Login Failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Welcome Back! 👋",
-            description: "Successfully logged in.",
-          });
-        }
       }
     } catch (error) {
       console.error("Auth error:", error);
@@ -187,12 +155,10 @@ const Auth = () => {
           <div className="glass-card p-8 space-y-6">
             <div className="text-center space-y-2">
               <h1 className="text-3xl font-display font-bold">
-                {isSignUp ? "Create Your Account" : "Welcome Back"}
+                Welcome Back
               </h1>
               <p className="text-foreground/70">
-                {isSignUp 
-                  ? "Sign up to activate your AI agent" 
-                  : "Sign in to continue your job search"}
+                Sign in to continue your job search
               </p>
             </div>
 
@@ -265,25 +231,13 @@ const Auth = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    {isSignUp ? "Creating Account..." : "Signing In..."}
+                    Signing In...
                   </>
                 ) : (
-                  isSignUp ? "Sign Up" : "Sign In"
+                  "Sign In"
                 )}
               </Button>
             </form>
-
-            <div className="text-center text-sm">
-              <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary hover:underline"
-                disabled={isLoading}
-              >
-                {isSignUp 
-                  ? "Already have an account? Sign in" 
-                  : "Don't have an account? Sign up"}
-              </button>
-            </div>
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
