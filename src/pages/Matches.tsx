@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApplicationsSummary } from "@/components/ApplicationsSummary";
 import { JobCard } from "@/components/JobCard";
 import { InboxEmailCard } from "@/components/InboxEmailCard";
+import { EmailDetailDialog } from "@/components/EmailDetailDialog";
 
 interface ScrapedJob {
   id: string;
@@ -56,6 +57,8 @@ const Matches = () => {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [rejectedApplications, setRejectedApplications] = useState<JobApplication[]>([]);
   const [inboxEmails, setInboxEmails] = useState<EmailResponse[]>([]);
+  const [selectedEmail, setSelectedEmail] = useState<EmailResponse | null>(null);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -82,14 +85,32 @@ const Matches = () => {
   const loadData = async (uid: string) => {
     setIsLoading(true);
     try {
-      // Load scraped jobs
+      // Load scraped jobs - filter for unique jobs and graduate-level only
       const { data: jobs, error: jobsError } = await supabase
         .from('scraped_jobs')
         .select('*')
         .order('match_score', { ascending: false });
 
       if (jobsError) throw jobsError;
-      setScrapedJobs(jobs || []);
+      
+      // Remove duplicates by job_id and filter for graduate-level positions only
+      const uniqueGraduateJobs = jobs?.reduce((acc: ScrapedJob[], job) => {
+        const exists = acc.find(j => j.job_id === job.job_id);
+        const isGraduateLevel = 
+          job.title.toLowerCase().includes('intern') ||
+          job.title.toLowerCase().includes('trainee') ||
+          job.title.toLowerCase().includes('graduate') ||
+          job.title.toLowerCase().includes('entry') ||
+          job.title.toLowerCase().includes('junior') ||
+          job.title.toLowerCase().includes('associate') && !job.title.toLowerCase().includes('senior');
+        
+        if (!exists && isGraduateLevel) {
+          acc.push(job);
+        }
+        return acc;
+      }, []) || [];
+      
+      setScrapedJobs(uniqueGraduateJobs);
 
       // Load cart items
       const { data: cart, error: cartError } = await supabase
@@ -388,6 +409,12 @@ const Matches = () => {
     ? Math.round((positiveResponses / totalApplications) * 100) 
     : 0;
 
+  // Inbox summary statistics
+  const assignmentCount = inboxEmails.filter(e => e.status_extracted === 'interview_requested').length;
+  const interviewCount = inboxEmails.filter(e => e.status_extracted === 'interview_scheduled').length;
+  const contractCount = inboxEmails.filter(e => e.status_extracted === 'offer_received').length;
+  const rejectedEmailCount = inboxEmails.filter(e => e.status_extracted === 'rejected').length;
+
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-y-scroll">
       <AppHeader />
@@ -554,14 +581,39 @@ const Matches = () => {
           <TabsContent value="inbox">
             {inboxEmails.length > 0 ? (
               <>
-                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h3 className="font-semibold text-blue-800 mb-1">📬 Company Responses</h3>
-                  <p className="text-sm text-blue-700">
-                    You have {inboxEmails.length} messages from companies. Track your application progress here.
-                  </p>
+                {/* Inbox Summary Statistics */}
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700 mb-1">Assignment</p>
+                    <p className="text-2xl font-bold text-blue-800">{assignmentCount}</p>
+                  </div>
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-700 mb-1">Interview Planning</p>
+                    <p className="text-2xl font-bold text-green-800">{interviewCount}</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <p className="text-sm text-purple-700 mb-1">Contract Signing</p>
+                    <p className="text-2xl font-bold text-purple-800">{contractCount}</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <p className="text-sm text-gray-700 mb-1">Not Selected</p>
+                    <p className="text-2xl font-bold text-gray-800">{rejectedEmailCount}</p>
+                  </div>
                 </div>
-                
-                <div className="space-y-3">
+
+                {/* Email List Header */}
+                <div className="bg-muted/50 border-b-2 border-border">
+                  <div className="grid grid-cols-12 gap-3 px-4 py-3 text-xs font-semibold text-foreground/70 uppercase">
+                    <div className="col-span-1 text-center">Icon</div>
+                    <div className="col-span-2">Status</div>
+                    <div className="col-span-3">Company</div>
+                    <div className="col-span-4">Subject</div>
+                    <div className="col-span-2 text-right">Date</div>
+                  </div>
+                </div>
+
+                {/* Email List */}
+                <div className="border rounded-lg overflow-hidden">
                   {inboxEmails.map((email) => (
                     <InboxEmailCard
                       key={email.id}
@@ -571,6 +623,10 @@ const Matches = () => {
                       body={email.body}
                       receivedAt={email.received_at}
                       status={email.status_extracted}
+                      onClick={() => {
+                        setSelectedEmail(email);
+                        setIsEmailDialogOpen(true);
+                      }}
                     />
                   ))}
                 </div>
@@ -583,6 +639,22 @@ const Matches = () => {
               </div>
             )}
           </TabsContent>
+
+          {/* Email Detail Dialog */}
+          <EmailDetailDialog
+            open={isEmailDialogOpen}
+            onOpenChange={setIsEmailDialogOpen}
+            email={selectedEmail ? {
+              company: selectedEmail.company,
+              position: selectedEmail.position,
+              subject: selectedEmail.subject,
+              body: selectedEmail.body,
+              receivedAt: selectedEmail.received_at,
+              status: selectedEmail.status_extracted,
+              from_email: selectedEmail.from_email,
+              to_email: selectedEmail.to_email,
+            } : null}
+          />
 
           {/* Learning Opportunities (Rejected) Tab */}
           <TabsContent value="learning">
