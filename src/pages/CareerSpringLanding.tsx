@@ -124,26 +124,40 @@ const CareerSpringLanding = () => {
             </p>
           </ScrollSection>
 
-          {/* Feature Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1: Jargon Decoder */}
-            <ScrollSection delay={0}>
-              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                  <Zap className="w-6 h-6 text-primary" />
+          {/* Jargon Decoder Spotlight Section */}
+          <ScrollSection>
+            <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 border-4 border-red-200 rounded-3xl p-12 mb-16 shadow-2xl relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-0" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary/10 rounded-full blur-3xl -z-0" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-center gap-3 mb-6">
+                  <Zap className="w-8 h-8 text-primary animate-pulse" />
+                  <h3 className="text-3xl md:text-4xl font-display font-bold text-center">
+                    Stop Getting Lost in Translation
+                  </h3>
+                  <Zap className="w-8 h-8 text-primary animate-pulse" />
                 </div>
-                <h3 className="text-2xl font-display font-semibold mb-4">
-                  We translate the jargon
-                </h3>
-                <div className="mt-6">
+                <p className="text-lg text-center text-foreground/80 mb-10 max-w-2xl mx-auto font-body">
+                  Job descriptions are full of corporate jargon that makes you feel unqualified. 
+                  We translate it into plain English so you can see you're already qualified.
+                </p>
+                <div className="max-w-lg mx-auto">
                   <JargonDecoderCard />
                 </div>
+                <p className="text-center text-sm text-foreground/60 mt-8 font-body italic">
+                  💡 We decode 100+ common phrases so you know exactly what employers really mean
+                </p>
               </div>
-            </ScrollSection>
+            </div>
+          </ScrollSection>
 
+          {/* Feature Cards Grid */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Feature 2: Skills-First Matcher */}
-            <ScrollSection delay={100}>
-              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+            <ScrollSection delay={0}>
+              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02] h-full">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                   <Target className="w-6 h-6 text-primary" />
                 </div>
@@ -167,8 +181,8 @@ const CareerSpringLanding = () => {
             </ScrollSection>
 
             {/* Feature 3: Beat the Bots */}
-            <ScrollSection delay={200}>
-              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+            <ScrollSection delay={100}>
+              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02] h-full">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                   <CheckCircle2 className="w-6 h-6 text-primary" />
                 </div>
