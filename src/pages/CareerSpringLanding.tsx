@@ -78,7 +78,7 @@ const CareerSpringLanding = () => {
               style={{ animationDelay: "0.7s" }}
             >
               <Button
-                onClick={() => navigate(cvUploaded ? "/matches" : "/upload")}
+                onClick={() => navigate(cvUploaded ? "/matches" : "/auth")}
                 size="lg"
                 className="text-lg px-8 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
               >
@@ -257,7 +257,7 @@ const CareerSpringLanding = () => {
           <ScrollSection delay={200}>
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
               <Button
-                onClick={() => navigate(cvUploaded ? "/matches" : "/upload")}
+                onClick={() => navigate(cvUploaded ? "/matches" : "/auth")}
                 size="lg"
                 className="text-lg px-10 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-xl"
               >

@@ -12,6 +12,7 @@ import Matches from "./pages/Matches";
 import SavedCareers from "./pages/SavedCareers";
 import DislikedJobs from "./pages/DislikedJobs";
 import Profile from "./pages/Profile";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<CareerSpringLanding />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/upload" element={<UploadCV />} />
           <Route path="/onboarding/step1" element={<OnboardingStep1 />} />
           <Route path="/onboarding/step2" element={<OnboardingStep2 />} />
