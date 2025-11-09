@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText, Sprout } from "lucide-react";
+import { Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { uploadCV } from "@/services/api";
+import { AppHeader } from "@/components/AppHeader";
+import { AppFooter } from "@/components/AppFooter";
 
 const UploadCV = () => {
   const navigate = useNavigate();
@@ -57,18 +59,8 @@ const UploadCV = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-              <Sprout className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">Career Spring</span>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col bg-white">
+      <AppHeader />
 
       {/* Main Content */}
       <section 
@@ -168,6 +160,8 @@ const UploadCV = () => {
           </div>
         </main>
       </section>
+      
+      <AppFooter />
     </div>
   );
 };

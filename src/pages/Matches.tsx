@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import CareerSpringNav from "@/components/CareerSpringNav";
 import JobMatchCard, { JobMatch } from "@/components/JobMatchCard";
 import ApplyModal from "@/components/ApplyModal";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { fetchJobMatches, saveJob, dislikeJob } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
+import { AppHeader } from "@/components/AppHeader";
+import { AppFooter } from "@/components/AppFooter";
 
 const MOCK_JOBS: JobMatch[] = [
   {
@@ -163,22 +164,22 @@ const Matches = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CareerSpringNav />
+    <div className="min-h-screen bg-white flex flex-col">
+      <AppHeader />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center bg-white rounded-full px-4 py-2 mb-4 shadow-sm">
+          <div className="inline-flex items-center bg-secondary/30 rounded-full px-4 py-2 mb-4 shadow-sm">
             <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs mr-2">
               {jobs.length}
             </span>
-            <span className="text-sm font-medium text-gray-700">Matches Found</span>
+            <span className="text-sm font-medium text-foreground/70">Matches Found</span>
           </div>
-          <h1 className="section-title text-3xl md:text-5xl mb-4">
+          <h1 className="text-3xl md:text-5xl font-display font-bold mb-4">
             Your Perfect Matches
           </h1>
-          <p className="section-subtitle max-w-2xl mx-auto">
+          <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
             We found {jobs.length} opportunities tailored to your skills and experience
           </p>
           
@@ -188,7 +189,7 @@ const Matches = () => {
               onClick={handleReplaceCV}
               variant="outline"
               size="lg"
-              className="rounded-full"
+              className="rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
             >
               <Upload className="w-4 h-4 mr-2" />
               Upload New CV
@@ -200,7 +201,7 @@ const Matches = () => {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-xl text-gray-600">Loading your perfect matches...</p>
+            <p className="text-xl text-foreground/70">Loading your perfect matches...</p>
           </div>
         ) : jobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -216,7 +217,7 @@ const Matches = () => {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-foreground/70">
               No more matches for now. Check back later or explore your saved careers!
             </p>
           </div>
@@ -229,6 +230,8 @@ const Matches = () => {
         onClose={() => setIsModalOpen(false)}
         job={selectedJob}
       />
+      
+      <AppFooter />
     </div>
   );
 };

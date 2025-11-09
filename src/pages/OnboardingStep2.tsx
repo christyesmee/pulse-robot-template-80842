@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sprout } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { AppHeader } from "@/components/AppHeader";
+import { AppFooter } from "@/components/AppFooter";
 
 const EXPERIENCE_TYPES = [
   { id: "internship", label: "Internship(s)", placeholder: "What company or field?" },
@@ -53,21 +54,10 @@ const OnboardingStep2 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <Sprout className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">Career Spring</span>
-            </div>
-            <div className="text-sm text-gray-500">Step 2 of 3</div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 flex flex-col">
+      <AppHeader />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Progress Bar */}
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -76,11 +66,11 @@ const OnboardingStep2 = () => {
 
           {/* Title */}
           <div className="text-center space-y-3">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+            <h1 className="text-4xl md:text-5xl font-display font-bold">
               Let's find your skills. 💡
             </h1>
-            <p className="text-xl text-gray-600">(Hint: You have more than you think.)</p>
-            <p className="text-base text-gray-500 max-w-2xl mx-auto">
+            <p className="text-xl text-foreground/70">(Hint: You have more than you think.)</p>
+            <p className="text-base text-foreground/60 max-w-2xl mx-auto">
               This isn't a resume. We just want to know what you've done. School projects and
               part-time jobs are where the best skills come from!
             </p>
@@ -150,6 +140,8 @@ const OnboardingStep2 = () => {
           </div>
         </div>
       </main>
+      
+      <AppFooter />
     </div>
   );
 };

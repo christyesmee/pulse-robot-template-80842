@@ -6,6 +6,8 @@ import { JargonDecoderCard } from "@/components/JargonDecoderCard";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
 import { Background3D } from "@/components/Background3D";
+import { AppHeader } from "@/components/AppHeader";
+import { AppFooter } from "@/components/AppFooter";
 
 const ScrollSection = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
   const { ref, isVisible } = useScrollAnimation(0.1);
@@ -37,38 +39,7 @@ const CareerSpringLanding = () => {
   return (
     <div className="min-h-screen bg-white relative">
       <Background3D />
-      
-      {/* Header */}
-      <header className="bg-white/80 border-b border-gray-100 sticky top-0 z-50 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-              <AnimatedLogo className="w-10 h-10" animate={false} />
-              <span className="text-2xl font-display font-bold">
-                <span className="text-secondary">career</span>
-                <span className="text-primary">spring.ai</span>
-              </span>
-            </div>
-            
-            {cvUploaded && (
-              <nav className="flex items-center gap-6">
-                <button
-                  onClick={() => navigate("/matches")}
-                  className="text-sm font-medium transition-colors hover:text-primary text-foreground/70"
-                >
-                  Your Matches
-                </button>
-                <button
-                  onClick={() => navigate("/saved")}
-                  className="text-sm font-medium transition-colors hover:text-primary text-foreground/70"
-                >
-                  Saved
-                </button>
-              </nav>
-            )}
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-transparent pt-20 pb-32 z-10">
@@ -102,7 +73,7 @@ const CareerSpringLanding = () => {
                 size="lg"
                 className="text-lg px-8 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
               >
-                Activate Your AI Agent
+                {cvUploaded ? "Go to My Job Matches" : "Activate Your AI Agent"}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
@@ -234,22 +205,14 @@ const CareerSpringLanding = () => {
               size="lg"
               className="text-lg px-10 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-xl"
             >
-              Get Started (It's Free)
+              {cvUploaded ? "View My Dashboard" : "Get Started (It's Free)"}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </ScrollSection>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-white/80 backdrop-blur-md border-t border-gray-100 py-8 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-2 text-foreground/60">
-            <AnimatedLogo className="w-6 h-6" animate={false} />
-            <span className="text-sm font-body">© 2025 <span className="text-secondary">career</span><span className="text-primary">spring.ai</span></span>
-          </div>
-        </div>
-      </footer>
+      <AppFooter />
     </div>
   );
 };

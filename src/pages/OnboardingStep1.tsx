@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sprout, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
+import { AppFooter } from "@/components/AppFooter";
 
 const FIELDS = [
   "Marketing",
@@ -48,21 +50,10 @@ const OnboardingStep1 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2">
-              <Sprout className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">Career Spring</span>
-            </div>
-            <div className="text-sm text-gray-500">Step 1 of 3</div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 flex flex-col">
+      <AppHeader />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-8">
           {/* Progress Bar */}
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -71,11 +62,11 @@ const OnboardingStep1 = () => {
 
           {/* Title */}
           <div className="text-center space-y-3">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+            <h1 className="text-4xl md:text-5xl font-display font-bold">
               Welcome to Career Spring! 🌱
             </h1>
-            <p className="text-xl text-gray-600">Let's build your Skills Profile</p>
-            <p className="text-base text-gray-500">
+            <p className="text-xl text-foreground/70">Let's build your Skills Profile</p>
+            <p className="text-base text-foreground/60">
               We'll use this to find jobs that actually match what you can do.
             </p>
           </div>
@@ -193,6 +184,8 @@ const OnboardingStep1 = () => {
           </div>
         </div>
       </main>
+      
+      <AppFooter />
     </div>
   );
 };
