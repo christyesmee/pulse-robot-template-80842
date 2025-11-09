@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import JobMatchCard, { JobMatch } from "@/components/JobMatchCard";
 import ApplyModal from "@/components/ApplyModal";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { User, Bookmark, X, RotateCcw } from "lucide-react";
 import { fetchJobMatches, saveJob, dislikeJob } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const MOCK_JOBS: JobMatch[] = [
   {
@@ -75,17 +78,15 @@ const MOCK_JOBS: JobMatch[] = [
 const Matches = () => {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<JobMatch[]>([]);
+  const [savedJobs, setSavedJobs] = useState<JobMatch[]>([]);
+  const [dislikedJobs, setDislikedJobs] = useState<JobMatch[]>([]);
   const [selectedJob, setSelectedJob] = useState<JobMatch | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const handleReplaceCV = () => {
-    toast({
-      title: "Replace CV",
-      description: "Redirecting to upload page...",
-    });
-    navigate("/upload");
+  const handleGoToProfile = () => {
+    navigate("/profile");
   };
 
   // Fetch job matches on component mount
@@ -108,6 +109,12 @@ const Matches = () => {
     };
 
     loadMatches();
+    
+    // Load saved and disliked jobs from localStorage
+    const saved = JSON.parse(localStorage.getItem("savedJobs") || "[]");
+    const disliked = JSON.parse(localStorage.getItem("dislikedJobs") || "[]");
+    setSavedJobs(saved);
+    setDislikedJobs(disliked);
   }, [toast]);
 
   const handleApply = (job: JobMatch) => {
@@ -146,8 +153,9 @@ const Matches = () => {
       
       // Update local state and localStorage
       setJobs(jobs.filter((j) => j.id !== job.id));
-      const dislikedJobs = JSON.parse(localStorage.getItem("dislikedJobs") || "[]");
-      localStorage.setItem("dislikedJobs", JSON.stringify([...dislikedJobs, job]));
+      const updated = [...dislikedJobs, job];
+      setDislikedJobs(updated);
+      localStorage.setItem("dislikedJobs", JSON.stringify(updated));
       
       toast({
         title: "Job Dismissed",
@@ -163,65 +171,189 @@ const Matches = () => {
     }
   };
 
+  const handleRemoveSaved = (job: JobMatch) => {
+    const updated = savedJobs.filter((j) => j.id !== job.id);
+    setSavedJobs(updated);
+    localStorage.setItem("savedJobs", JSON.stringify(updated));
+  };
+
+  const handleDislikeSaved = (job: JobMatch) => {
+    handleRemoveSaved(job);
+    const updated = [...dislikedJobs, job];
+    setDislikedJobs(updated);
+    localStorage.setItem("dislikedJobs", JSON.stringify(updated));
+  };
+
+  const handleRestore = (job: JobMatch) => {
+    const updated = dislikedJobs.filter((j) => j.id !== job.id);
+    setDislikedJobs(updated);
+    localStorage.setItem("dislikedJobs", JSON.stringify(updated));
+  };
+
+  const getMatchColor = (score: number) => {
+    if (score >= 80) return "bg-green-100 text-green-800 border-green-200";
+    if (score >= 60) return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    return "bg-orange-100 text-orange-800 border-orange-200";
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <AppHeader />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-12 text-center">
-          <div className="inline-flex items-center bg-secondary/30 rounded-full px-4 py-2 mb-4 shadow-sm">
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs mr-2">
-              {jobs.length}
-            </span>
-            <span className="text-sm font-medium text-foreground/70">Matches Found</span>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-display font-bold mb-4">
-            Your Perfect Matches
-          </h1>
-          <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
-            We found {jobs.length} opportunities tailored to your skills and experience
-          </p>
-          
-          {/* Replace CV Button */}
-          <div className="mt-6">
-            <Button
-              onClick={handleReplaceCV}
-              variant="outline"
-              size="lg"
-              className="rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload New CV
-            </Button>
-          </div>
-        </div>
-
-        {/* Job Cards Grid */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-xl text-foreground/70">Loading your perfect matches...</p>
-          </div>
-        ) : jobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {jobs.map((job) => (
-              <JobMatchCard
-                key={job.id}
-                job={job}
-                onApply={handleApply}
-                onSave={handleSave}
-                onDislike={handleDislike}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-xl text-foreground/70">
-              No more matches for now. Check back later or explore your saved careers!
+        <div className="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
+              Your Job Matches
+            </h1>
+            <p className="text-foreground/70">
+              Browse matches, saved opportunities, and dismissed jobs
             </p>
           </div>
-        )}
+          
+          {/* My Profile Button */}
+          <Button
+            onClick={handleGoToProfile}
+            variant="outline"
+            size="lg"
+            className="rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
+          >
+            <User className="w-4 h-4 mr-2" />
+            My Profile
+          </Button>
+        </div>
+
+        {/* Tabs */}
+        <Tabs defaultValue="matches" className="w-full">
+          <TabsList className="w-full md:w-auto mb-8">
+            <TabsTrigger value="matches" className="flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs">
+                {jobs.length}
+              </span>
+              All Matches
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="flex items-center gap-2">
+              <Bookmark className="w-4 h-4" />
+              Saved ({savedJobs.length})
+            </TabsTrigger>
+            <TabsTrigger value="disliked" className="flex items-center gap-2">
+              <X className="w-4 h-4" />
+              Disliked ({dislikedJobs.length})
+            </TabsTrigger>
+          </TabsList>
+
+          {/* All Matches Tab */}
+          <TabsContent value="matches">
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-xl text-foreground/70">Loading your perfect matches...</p>
+              </div>
+            ) : jobs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {jobs.map((job) => (
+                  <JobMatchCard
+                    key={job.id}
+                    job={job}
+                    onApply={handleApply}
+                    onSave={handleSave}
+                    onDislike={handleDislike}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-xl text-foreground/70">
+                  No more matches for now. Check back later or explore your saved careers!
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Saved Tab */}
+          <TabsContent value="saved">
+            {savedJobs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {savedJobs.map((job) => (
+                  <JobMatchCard
+                    key={job.id}
+                    job={job}
+                    onApply={handleApply}
+                    onSave={handleRemoveSaved}
+                    onDislike={handleDislikeSaved}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">
+                  No saved careers yet
+                </p>
+                <p className="text-foreground/60">
+                  Save opportunities from your matches to review them later
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Disliked Tab */}
+          <TabsContent value="disliked">
+            {dislikedJobs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {dislikedJobs.map((job) => (
+                  <Card key={job.id} className="bg-white/90 backdrop-blur-sm p-6 opacity-60 hover:opacity-100 transition-all duration-200 hover:shadow-lg relative border border-border rounded-2xl">
+                    <Badge
+                      className={`absolute top-4 right-4 text-sm font-bold px-3 py-1 ${getMatchColor(
+                        job.matchScore
+                      )}`}
+                    >
+                      {job.matchScore}% Match
+                    </Badge>
+
+                    {job.company && (
+                      <p className="text-sm font-semibold text-foreground/70 mb-2">{job.company}</p>
+                    )}
+
+                    {job.salary && (
+                      <p className="text-lg font-bold text-primary mb-4 mt-8">{job.salary}</p>
+                    )}
+
+                    <div className="mb-4">
+                      <h3 className="text-lg font-bold text-foreground mb-3">
+                        What you'll actually do:
+                      </h3>
+                      <p className="text-foreground/70 leading-relaxed">{job.description}</p>
+                    </div>
+
+                    <div className="pt-4 border-t border-border">
+                      <Button
+                        onClick={() => handleRestore(job)}
+                        variant="outline"
+                        size="lg"
+                        className="w-full rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
+                      >
+                        <RotateCcw className="w-5 h-5 mr-2" />
+                        Restore to Matches
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <X className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">
+                  No disliked jobs yet
+                </p>
+                <p className="text-foreground/60">
+                  Jobs you dismiss will appear here
+                </p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Apply Modal */}

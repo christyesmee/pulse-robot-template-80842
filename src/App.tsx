@@ -11,6 +11,7 @@ import OnboardingStep3 from "./pages/OnboardingStep3";
 import Matches from "./pages/Matches";
 import SavedCareers from "./pages/SavedCareers";
 import DislikedJobs from "./pages/DislikedJobs";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/matches" element={<Matches />} />
           <Route path="/saved" element={<SavedCareers />} />
           <Route path="/disliked" element={<DislikedJobs />} />
+          <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
