@@ -64,15 +64,8 @@ const UploadCV = () => {
 
       {/* Main Content */}
       <section 
-        className="overflow-hidden relative bg-cover" 
-        style={{
-          backgroundImage: 'url("/Header-background.webp")',
-          backgroundPosition: 'center 30%', 
-          minHeight: 'calc(100vh - 64px)'
-        }}
+        className="flex-1 overflow-hidden relative bg-white" 
       >
-        <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-gradient-to-br from-emerald-400/20 to-green-500/20 blur-3xl rounded-full"></div>
-        
         <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
           <div className="text-center space-y-6 mb-12">
             <div 
@@ -82,7 +75,7 @@ const UploadCV = () => {
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs mr-2">02</span>
               <span className="text-sm font-medium text-gray-700">Upload CV</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            <h1 className="text-4xl md:text-5xl font-display font-bold opacity-0 animate-fade-in" style={{ animationDelay: "0.3s" }}>
               Upload Your CV to Get Started
             </h1>
             <p className="text-xl text-gray-700 opacity-0 animate-fade-in" style={{ animationDelay: "0.5s" }}>

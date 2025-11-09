@@ -71,13 +71,13 @@ const OnboardingStep1 = () => {
             </p>
           </div>
 
-          {/* Question 1: Field of Interest */}
+           {/* Question 1: Field of Interest */}
           <div className="glass-card p-8 space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-display font-semibold mb-2">
                 What's your main field of interest?
               </h2>
-              <p className="text-gray-600">
+              <p className="text-foreground/70">
                 This helps us know what kind of jobs to look for. (Pick 1-3)
               </p>
             </div>
@@ -135,7 +135,7 @@ const OnboardingStep1 = () => {
           {/* Question 2: Current Status */}
           <div className="glass-card p-8 space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-display font-semibold mb-2">
                 What's your current status?
               </h2>
             </div>

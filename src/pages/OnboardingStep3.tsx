@@ -110,8 +110,8 @@ const OnboardingStep3 = () => {
   const handleFinish = async () => {
     if (selectedSkills.length === 0) {
       toast({
-        title: "Add some skills",
-        description: "Please select at least one skill to continue",
+        title: "Please add skills first",
+        description: "Select at least one skill from the suggestions or add your own",
         variant: "destructive",
       });
       return;
@@ -119,20 +119,30 @@ const OnboardingStep3 = () => {
 
     setIsSubmitting(true);
 
-    // Store all onboarding data
-    localStorage.setItem("onboarding_skills", JSON.stringify(selectedSkills));
-    localStorage.setItem("onboarding_tools", JSON.stringify(tools));
-    localStorage.setItem("onboarding_completed", "true");
+    try {
+      // Store all onboarding data
+      localStorage.setItem("onboarding_skills", JSON.stringify(selectedSkills));
+      localStorage.setItem("onboarding_tools", JSON.stringify(tools));
+      localStorage.setItem("onboarding_completed", "true");
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    toast({
-      title: "Profile Complete! 🎉",
-      description: "Finding your perfect job matches...",
-    });
+      toast({
+        title: "Profile Complete! 🎉",
+        description: "Finding your perfect job matches...",
+      });
 
-    navigate("/matches");
+      navigate("/matches");
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+      toast({
+        title: "Something went wrong",
+        description: "Please try again",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {

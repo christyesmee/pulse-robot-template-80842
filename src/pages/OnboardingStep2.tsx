@@ -79,7 +79,7 @@ const OnboardingStep2 = () => {
           {/* Experience Selection */}
           <div className="glass-card p-8 space-y-6">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-display font-semibold mb-2">
                 What kinds of experience do you have?
               </h2>
               <p className="text-gray-600">
