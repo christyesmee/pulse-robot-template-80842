@@ -45,8 +45,8 @@ const Matches = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Use a demo user ID for testing without auth
-    const demoUserId = 'demo-user-123';
+    // Use a valid UUID for demo user (without authentication)
+    const demoUserId = '00000000-0000-0000-0000-000000000001';
     setUserId(demoUserId);
     loadData(demoUserId);
   }, []);
