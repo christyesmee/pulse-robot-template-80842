@@ -31,23 +31,39 @@ const UploadCV = () => {
 
     setIsScanning(true);
 
-    try {
-      // Call API to upload and parse CV
-      const result = await uploadCV(file);
-      
-      // Store user ID and CV uploaded status
-      localStorage.setItem("userId", result.userId);
-      localStorage.setItem("cvUploaded", "true");
-      
+     try {
+      // Prepare form data for backend
+      const formData = new FormData();
+      formData.append("user_id", "1"); // you can replace this later with dynamic ID
+      formData.append("file", file);
+
+      // POST request to backend
+      const response = await fetch("http://78.141.223.232:8000/upload_cv", {
+        method: "POST",
+        body: formData,
+        mode: "cors",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Backend response:", result);
+
       toast({
         title: "CV Scanned Successfully! 🌱",
-        description: "Let's build your profile...",
+        description: result.message || "Let's build your profile...",
       });
-      
-      // Navigate to onboarding flow
+
+      // Save user info if needed
+      localStorage.setItem("userId", "1");
+      localStorage.setItem("cvUploaded", "true");
+
+      // Move to next step
       navigate("/onboarding/step1");
     } catch (error) {
-      console.error("CV upload error:", error);
+      console.error("❌ CV upload error:", error);
       toast({
         title: "Upload Failed",
         description: "There was an error processing your CV. Please try again.",
