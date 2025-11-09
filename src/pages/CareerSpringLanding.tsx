@@ -1,95 +1,63 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowRight, Sprout } from "lucide-react";
+import { ArrowRight, CheckCircle2, Target, Zap } from "lucide-react";
+import { AnimatedLogo } from "@/components/AnimatedLogo";
+import { JargonDecoderCard } from "@/components/JargonDecoderCard";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { Button } from "@/components/ui/button";
+
+const ScrollSection = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
+  const { ref, isVisible } = useScrollAnimation(0.1);
+  
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        isVisible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 translate-y-5"
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
 
 const CareerSpringLanding = () => {
   const navigate = useNavigate();
   const [cvUploaded, setCvUploaded] = useState(false);
 
   useEffect(() => {
-    // Check if CV has been uploaded
     const hasUploadedCV = localStorage.getItem("cvUploaded") === "true";
     setCvUploaded(hasUploadedCV);
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm bg-white/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-              <Sprout className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">Career Spring</span>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+              <AnimatedLogo className="w-10 h-10" animate={false} />
+              <span className="text-2xl font-display font-bold text-primary">Career Spring</span>
             </div>
             
             {cvUploaded && (
-              <nav className="hidden md:flex items-center gap-6">
-                <a
-                  href="/matches"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/matches");
-                  }}
-                  className="text-sm font-medium transition-colors hover:text-primary text-gray-600"
+              <nav className="flex items-center gap-6">
+                <button
+                  onClick={() => navigate("/matches")}
+                  className="text-sm font-medium transition-colors hover:text-primary text-foreground/70"
                 >
                   Your Matches
-                </a>
-                <a
-                  href="/saved"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/saved");
-                  }}
-                  className="text-sm font-medium transition-colors hover:text-primary text-gray-600"
-                >
-                  Saved Careers
-                </a>
-                <a
-                  href="/disliked"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/disliked");
-                  }}
-                  className="text-sm font-medium transition-colors hover:text-primary text-gray-600"
-                >
-                  Disliked Jobs
-                </a>
-              </nav>
-            )}
-
-            {cvUploaded && (
-              <nav className="flex md:hidden gap-4">
-                <a
-                  href="/matches"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/matches");
-                  }}
-                  className="text-xs font-medium transition-colors hover:text-primary text-gray-600"
-                >
-                  Matches
-                </a>
-                <a
-                  href="/saved"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/saved");
-                  }}
-                  className="text-xs font-medium transition-colors hover:text-primary text-gray-600"
+                </button>
+                <button
+                  onClick={() => navigate("/saved")}
+                  className="text-sm font-medium transition-colors hover:text-primary text-foreground/70"
                 >
                   Saved
-                </a>
-                <a
-                  href="/disliked"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/disliked");
-                  }}
-                  className="text-xs font-medium transition-colors hover:text-primary text-gray-600"
-                >
-                  Disliked
-                </a>
+                </button>
               </nav>
             )}
           </div>
@@ -97,100 +65,193 @@ const CareerSpringLanding = () => {
       </header>
 
       {/* Hero Section */}
-      <section 
-        className="overflow-hidden relative bg-cover" 
-        style={{
-          backgroundImage: 'url("/Header-background.webp")',
-          backgroundPosition: 'center 30%', 
-          padding: window.innerWidth < 768 ? '100px 12px 80px' : '120px 20px 120px'
-        }}
-      >
-        <div className="absolute -top-[10%] -right-[5%] w-1/2 h-[70%] bg-gradient-to-br from-emerald-400/20 to-green-500/20 blur-3xl rounded-full"></div>
-        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
-            <div 
-              className="inline-flex items-center bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 mb-6 opacity-0 animate-fade-in shadow-sm" 
-              style={{ animationDelay: "0.1s" }}
-            >
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs mr-2">01</span>
-              <span className="text-sm font-medium text-gray-700">Purpose</span>
+      <section className="relative overflow-hidden bg-white pt-20 pb-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-8 opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+              <AnimatedLogo className="w-24 h-24 mx-auto" animate={true} />
             </div>
             
             <h1 
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight opacity-0 animate-fade-in mb-6" 
+              className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold leading-tight opacity-0 animate-fade-in mb-6 max-w-5xl" 
               style={{ animationDelay: "0.3s" }}
             >
-              Find Your First 'Real' Job,<br className="hidden sm:inline" />
-              <span className="text-primary"> Minus the Jargon</span>
+              Stop decoding job descriptions.{" "}
+              <span className="text-primary">Start your career.</span>
             </h1>
             
             <p 
-              style={{ animationDelay: "0.5s" }} 
-              className="text-lg sm:text-xl text-gray-700 mb-8 leading-relaxed opacity-0 animate-fade-in max-w-3xl"
+              className="text-xl text-foreground/70 mb-12 leading-relaxed opacity-0 animate-fade-in max-w-3xl font-body" 
+              style={{ animationDelay: "0.5s" }}
             >
-              Career Spring translates confusing job posts into clear opportunities that match your skills. No experience required.
+              The entry-level job market is confusing. We built the translator. Career Spring turns your class projects and part-time gigs into the exact skills employers want.
             </p>
             
             <div 
-              className="flex flex-col sm:flex-row gap-4 opacity-0 animate-fade-in mb-16" 
+              className="opacity-0 animate-fade-in" 
               style={{ animationDelay: "0.7s" }}
             >
-              <button
-                onClick={() => {
-                  if (cvUploaded) {
-                    navigate("/matches");
-                  } else {
-                    navigate("/upload");
-                  }
-                }}
-                className="flex items-center justify-center group text-center"
-                style={{
-                  backgroundColor: 'hsl(var(--primary))',
-                  borderRadius: '1440px',
-                  color: '#FFFFFF',
-                  fontSize: '16px',
-                  lineHeight: '24px',
-                  padding: '16px 32px',
-                  border: '1px solid white',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
+              <Button
+                onClick={() => navigate(cvUploaded ? "/matches" : "/upload")}
+                size="lg"
+                className="text-lg px-8 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
               >
-                {cvUploaded ? "View Your Matches" : "Activate Your Agent"}
-                <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </button>
-            </div>
-
-            {/* Trust Indicators */}
-            <div 
-              className="grid grid-cols-3 gap-8 w-full max-w-3xl opacity-0 animate-fade-in"
-              style={{ animationDelay: "0.9s" }}
-            >
-              <div className="glass-card p-6 text-center">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
-                  10,000+
-                </div>
-                <div className="text-gray-600 text-sm">Graduates Matched</div>
-              </div>
-              <div className="glass-card p-6 text-center">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
-                  500+
-                </div>
-                <div className="text-gray-600 text-sm">Partner Companies</div>
-              </div>
-              <div className="glass-card p-6 text-center">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
-                  95%
-                </div>
-                <div className="text-gray-600 text-sm">Success Rate</div>
-              </div>
+                Build My Skills Profile
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
             </div>
           </div>
         </div>
-        
-        <div className="hidden lg:block absolute bottom-0 left-1/4 w-64 h-64 bg-emerald-100/30 rounded-full blur-3xl -z-10"></div>
+
+        {/* Decorative gradient */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-secondary opacity-30 blur-3xl rounded-full -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 opacity-30 blur-3xl rounded-full -z-10"></div>
       </section>
+
+      {/* Problem Section */}
+      <section className="py-24 bg-secondary/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollSection>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold text-center mb-8">
+              Sound familiar?
+            </h2>
+          </ScrollSection>
+          
+          <ScrollSection delay={100}>
+            <p className="text-lg text-foreground/80 leading-relaxed mb-8 font-body">
+              The "entry-level" job market feels broken. Job posts are filled with intimidating corporate jargon—"manage stakeholders," "drive synergy," "fast-paced environment"—that means nothing to you. Worse, they ask for 3 years of experience for a "first" job.
+            </p>
+          </ScrollSection>
+
+          <ScrollSection delay={200}>
+            <blockquote className="border-l-4 border-primary pl-6 py-4 bg-white rounded-r-xl shadow-sm">
+              <p className="text-xl font-semibold text-foreground font-display">
+                It's the <span className="text-primary">Experience Paradox</span>: you can't get a job without experience, and you can't get experience without a job.
+              </p>
+            </blockquote>
+          </ScrollSection>
+        </div>
+      </section>
+
+      {/* Solution Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ScrollSection>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold text-center mb-6">
+              Career Spring finds the job you're qualified for
+            </h2>
+            <p className="text-xl text-center text-foreground/70 mb-4 font-body">
+              (even if you don't know it yet)
+            </p>
+          </ScrollSection>
+
+          <ScrollSection delay={100}>
+            <p className="text-lg text-center text-foreground/80 max-w-3xl mx-auto mb-20 font-body">
+              You have the skills. You just speak a different language than the recruiters. We translate your academic life into a professional resume.
+            </p>
+          </ScrollSection>
+
+          {/* Feature Cards Grid */}
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Feature 1: Jargon Decoder */}
+            <ScrollSection delay={0}>
+              <div className="bg-white border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-display font-semibold mb-4">
+                  We translate the jargon
+                </h3>
+                <div className="mt-6">
+                  <JargonDecoderCard />
+                </div>
+              </div>
+            </ScrollSection>
+
+            {/* Feature 2: Skills-First Matcher */}
+            <ScrollSection delay={100}>
+              <div className="bg-white border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                  <Target className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-display font-semibold mb-4">
+                  We find your hidden skills
+                </h3>
+                <p className="text-foreground/70 mb-6 font-body">
+                  Our matcher bypasses the "years of experience" requirement. We show you <em>why</em> you're a match by connecting your coursework and projects to real-world skills.
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-foreground/80 font-body">Your final stats project → <strong>Data Analysis</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-foreground/80 font-body">Your shift at the coffee shop → <strong>Problem-Solving & Collaboration</strong></span>
+                  </li>
+                </ul>
+              </div>
+            </ScrollSection>
+
+            {/* Feature 3: Beat the Bots */}
+            <ScrollSection delay={200}>
+              <div className="bg-white border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
+                  <CheckCircle2 className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-display font-semibold mb-4">
+                  Beat the "Black Hole"
+                </h3>
+                <p className="text-foreground/70 font-body">
+                  Applicant Tracking Systems (ATS) filter out good candidates. We help you build a resume with the right <em>decoded</em> keywords, so you get seen by a human.
+                </p>
+              </div>
+            </ScrollSection>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-32 bg-gradient-to-br from-primary/5 via-secondary/50 to-white relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <ScrollSection>
+            <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
+              Stop the guesswork. Find your fit.
+            </h2>
+          </ScrollSection>
+          
+          <ScrollSection delay={100}>
+            <p className="text-xl text-foreground/80 mb-10 font-body">
+              You're ready. Let's build your skills profile and find the job that's waiting for you.
+            </p>
+          </ScrollSection>
+
+          <ScrollSection delay={200}>
+            <Button
+              onClick={() => navigate(cvUploaded ? "/matches" : "/upload")}
+              size="lg"
+              className="text-lg px-10 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-xl"
+            >
+              Get Started (It's Free)
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </ScrollSection>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-secondary rounded-full blur-3xl"></div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-100 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center gap-2 text-foreground/60">
+            <AnimatedLogo className="w-6 h-6" animate={false} />
+            <span className="text-sm font-body">© 2024 Career Spring. Start your career.</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
