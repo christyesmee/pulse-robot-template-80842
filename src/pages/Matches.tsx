@@ -158,17 +158,6 @@ const Matches = () => {
 
     setIsApplying(true);
     try {
-      // Open all job URLs in new tabs
-      cartJobs.forEach((job, index) => {
-        const scrapedJob = scrapedJobs.find(sj => sj.job_id === job.job_id);
-        if (scrapedJob?.source_url) {
-          // Stagger the tab openings slightly to avoid browser blocking
-          setTimeout(() => {
-            window.open(scrapedJob.source_url, '_blank');
-          }, index * 100);
-        }
-      });
-
       // Update all cart items to "applied" status
       const applicationIds = cartJobs.map(job => job.id);
       
@@ -184,8 +173,8 @@ const Matches = () => {
       if (error) throw error;
 
       toast({
-        title: "Applications Opened! 🚀",
-        description: `${cartJobs.length} job applications opened in new tabs. Jobs moved to Applications.`,
+        title: "Applications Submitted! 🎉",
+        description: `Moved ${cartJobs.length} jobs to Applications`,
       });
 
       loadData(userId);
