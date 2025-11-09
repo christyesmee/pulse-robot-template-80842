@@ -62,13 +62,18 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
           )}
           
           {/* Location & Posted Date */}
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
             <div className="flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5" />
               <span>{job.location}</span>
             </div>
             {job.postedDate && (
-              <span className="text-xs">Posted {job.postedDate}</span>
+              <>
+                <span className="text-xs">Posted {job.postedDate}</span>
+                <Badge variant="secondary" className="text-xs">
+                  {job.postedDate === 'today' ? '✨ Added today!' : `Added ${job.postedDate}`}
+                </Badge>
+              </>
             )}
           </div>
         </div>
@@ -210,7 +215,7 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
           className="flex-1"
           size="lg"
         >
-          Add to Queue
+          I like this job! 👍
         </Button>
         <Button
           onClick={() => onSave(job)}
