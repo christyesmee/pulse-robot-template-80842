@@ -52,6 +52,17 @@ const Matches = () => {
     const demoUserId = '00000000-0000-0000-0000-000000000001';
     setUserId(demoUserId);
     loadData(demoUserId);
+
+    // Show "New Jobs Found" notification after 1 minute
+    const newJobsTimer = setTimeout(() => {
+      toast({
+        title: "🎯 New Jobs Found Today!",
+        description: "We've found fresh opportunities matching your profile. Check the New Jobs tab.",
+        duration: 5000,
+      });
+    }, 60000); // 1 minute
+
+    return () => clearTimeout(newJobsTimer);
   }, []);
 
   const loadData = async (uid: string) => {
@@ -200,10 +211,16 @@ const Matches = () => {
 
       toast({
         title: "Applications Submitted! 🎉",
-        description: `Moved ${cartJobs.length} jobs to Applications`,
+        description: `Moved ${cartJobs.length} jobs to Applications. Companies will respond soon...`,
       });
 
       loadData(userId);
+
+      // Simulate company responses after 30 seconds
+      setTimeout(async () => {
+        await simulateCompanyResponses(applicationIds);
+      }, 30000);
+
     } catch (error) {
       console.error('Error applying to jobs:', error);
       toast({
@@ -213,6 +230,128 @@ const Matches = () => {
       });
     } finally {
       setIsApplying(false);
+    }
+  };
+
+  const simulateCompanyResponses = async (applicationIds: string[]) => {
+    if (!userId) return;
+
+    try {
+      // Get the applications we just applied to
+      const { data: applications } = await supabase
+        .from('job_applications')
+        .select('*')
+        .in('id', applicationIds);
+
+      if (!applications) return;
+
+      const responseTypes = [
+        {
+          type: 'interview',
+          status: 'interview_scheduled',
+          subject: 'Interview Invitation - {position}',
+          body: 'Dear Candidate,\n\nWe are impressed with your application and would like to invite you to an interview.\n\nDate: {date}\nTime: {time}\nLocation: Video Call\n\nPlease confirm your availability.\n\nBest regards,\n{company} Recruitment Team',
+        },
+        {
+          type: 'next_round',
+          status: 'interview_requested',
+          subject: 'Next Steps - {position}',
+          body: 'Hi there,\n\nThank you for your application. We would like to move you to the next round.\n\nPlease complete the following assessment:\n- Technical Skills Test (60 minutes)\n- Personality Assessment (20 minutes)\n\nLink: https://assessment.example.com\n\nBest,\n{company} Team',
+        },
+        {
+          type: 'rejection',
+          status: 'rejected',
+          subject: 'Application Update - {position}',
+          body: 'Dear Applicant,\n\nThank you for your interest in the {position} role at {company}.\n\nAfter careful consideration, we have decided to move forward with other candidates whose experience more closely matches our current needs.\n\nWe encourage you to apply for future opportunities.\n\nBest wishes,\n{company} Hiring Team',
+        },
+      ];
+
+      const getRandomDate = () => {
+        const days = Math.floor(Math.random() * 7) + 3;
+        const date = new Date();
+        date.setDate(date.getDate() + days);
+        return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      };
+
+      const getRandomTime = () => {
+        const hours = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'];
+        return hours[Math.floor(Math.random() * hours.length)];
+      };
+
+      let interviewCount = 0;
+      let rejectionCount = 0;
+
+      for (const app of applications) {
+        // Randomly select response type with weighted probability
+        const rand = Math.random();
+        let responseType;
+        if (rand < 0.35) {
+          responseType = responseTypes[0]; // 35% interview
+        } else if (rand < 0.65) {
+          responseType = responseTypes[1]; // 30% next round
+        } else {
+          responseType = responseTypes[2]; // 35% rejection
+        }
+
+        // Personalize the email
+        const subject = responseType.subject
+          .replace('{position}', app.position)
+          .replace('{company}', app.company);
+        
+        const body = responseType.body
+          .replace(/{position}/g, app.position)
+          .replace(/{company}/g, app.company)
+          .replace('{date}', getRandomDate())
+          .replace('{time}', getRandomTime());
+
+        // Insert mock email
+        await supabase
+          .from('application_emails')
+          .insert({
+            application_id: app.id,
+            from_email: `careers@${app.company.toLowerCase().replace(/\s+/g, '')}.com`,
+            to_email: 'candidate@example.com',
+            subject: subject,
+            body: body,
+            direction: 'received',
+            processed: true,
+            status_extracted: responseType.status,
+          });
+
+        // Update application status
+        await supabase
+          .from('job_applications')
+          .update({
+            status: responseType.status,
+            last_status_update: new Date().toISOString(),
+            status_details: { 
+              message: responseType.type === 'rejection' ? 'Not selected' : 'Positive response received',
+              email_received: true 
+            }
+          })
+          .eq('id', app.id);
+
+        if (responseType.type === 'interview' || responseType.type === 'next_round') {
+          interviewCount++;
+        } else {
+          rejectionCount++;
+        }
+      }
+
+      // Reload data to show updates
+      if (userId) {
+        await loadData(userId);
+      }
+
+      // Show success notification
+      toast({
+        title: "📧 Companies Have Responded!",
+        description: `You have ${interviewCount} positive responses! Check Applications and Interviews tabs.`,
+        duration: 7000,
+      });
+
+    } catch (error) {
+      console.error('Error simulating company responses:', error);
     }
   };
 
