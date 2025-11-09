@@ -5,6 +5,7 @@ import { AnimatedLogo } from "@/components/AnimatedLogo";
 import { JargonDecoderCard } from "@/components/JargonDecoderCard";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
+import { Background3D } from "@/components/Background3D";
 
 const ScrollSection = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
   const { ref, isVisible } = useScrollAnimation(0.1);
@@ -34,14 +35,19 @@ const CareerSpringLanding = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
+      <Background3D />
+      
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-50 backdrop-blur-sm bg-white/90">
+      <header className="bg-white/80 border-b border-gray-100 sticky top-0 z-50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
               <AnimatedLogo className="w-10 h-10" animate={false} />
-              <span className="text-2xl font-display font-bold text-primary">Career Spring</span>
+              <span className="text-2xl font-display font-bold">
+                <span className="text-secondary">career</span>
+                <span className="text-primary">spring.ai</span>
+              </span>
             </div>
             
             {cvUploaded && (
@@ -65,11 +71,11 @@ const CareerSpringLanding = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white pt-20 pb-32">
+      <section className="relative overflow-hidden bg-transparent pt-20 pb-32 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
             <div className="mb-8 opacity-0 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <AnimatedLogo className="w-24 h-24 mx-auto" animate={true} />
+              <AnimatedLogo className="w-32 h-32 mx-auto" animate={true} />
             </div>
             
             <h1 
@@ -84,7 +90,7 @@ const CareerSpringLanding = () => {
               className="text-xl text-foreground/70 mb-12 leading-relaxed opacity-0 animate-fade-in max-w-3xl font-body" 
               style={{ animationDelay: "0.5s" }}
             >
-              The entry-level job market is confusing. We built the translator. Career Spring turns your class projects and part-time gigs into the exact skills employers want.
+              Our AI agent finds the perfect job matches for your skills and interests, then helps you apply with one click.
             </p>
             
             <div 
@@ -96,20 +102,16 @@ const CareerSpringLanding = () => {
                 size="lg"
                 className="text-lg px-8 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
               >
-                Build My Skills Profile
+                Activate Your AI Agent
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
           </div>
         </div>
-
-        {/* Decorative gradient */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-secondary opacity-30 blur-3xl rounded-full -z-10"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/10 opacity-30 blur-3xl rounded-full -z-10"></div>
       </section>
 
       {/* Problem Section */}
-      <section className="py-24 bg-secondary/30">
+      <section className="py-24 bg-secondary/20 relative z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollSection>
             <h2 className="text-4xl sm:text-5xl font-display font-bold text-center mb-8">
@@ -124,7 +126,7 @@ const CareerSpringLanding = () => {
           </ScrollSection>
 
           <ScrollSection delay={200}>
-            <blockquote className="border-l-4 border-primary pl-6 py-4 bg-white rounded-r-xl shadow-sm">
+            <blockquote className="border-l-4 border-primary pl-6 py-4 bg-white/80 backdrop-blur-sm rounded-r-xl shadow-sm">
               <p className="text-xl font-semibold text-foreground font-display">
                 It's the <span className="text-primary">Experience Paradox</span>: you can't get a job without experience, and you can't get experience without a job.
               </p>
@@ -134,7 +136,7 @@ const CareerSpringLanding = () => {
       </section>
 
       {/* Solution Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-transparent relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollSection>
             <h2 className="text-4xl sm:text-5xl font-display font-bold text-center mb-6">
@@ -147,7 +149,7 @@ const CareerSpringLanding = () => {
 
           <ScrollSection delay={100}>
             <p className="text-lg text-center text-foreground/80 max-w-3xl mx-auto mb-20 font-body">
-              You have the skills. You just speak a different language than the recruiters. We translate your academic life into a professional resume.
+              You have the skills. You just speak a different language than the recruiters. We translate your academic life into a professional resume, find your perfect matches, and let you <strong>apply with one click.</strong>
             </p>
           </ScrollSection>
 
@@ -155,7 +157,7 @@ const CareerSpringLanding = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1: Jargon Decoder */}
             <ScrollSection delay={0}>
-              <div className="bg-white border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                   <Zap className="w-6 h-6 text-primary" />
                 </div>
@@ -170,7 +172,7 @@ const CareerSpringLanding = () => {
 
             {/* Feature 2: Skills-First Matcher */}
             <ScrollSection delay={100}>
-              <div className="bg-white border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                   <Target className="w-6 h-6 text-primary" />
                 </div>
@@ -195,15 +197,15 @@ const CareerSpringLanding = () => {
 
             {/* Feature 3: Beat the Bots */}
             <ScrollSection delay={200}>
-              <div className="bg-white border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
+              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02]">
                 <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
                   <CheckCircle2 className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-2xl font-display font-semibold mb-4">
-                  Beat the "Black Hole"
+                  Beat the Bots (and apply in one click)
                 </h3>
                 <p className="text-foreground/70 font-body">
-                  Applicant Tracking Systems (ATS) filter out good candidates. We help you build a resume with the right <em>decoded</em> keywords, so you get seen by a human.
+                  Our AI agent <strong>automatically tailors your CV</strong> for each job vacancy, optimizing it with the right keywords to beat the ATS (Applicant Tracking System) filters. Then, you can apply instantly.
                 </p>
               </div>
             </ScrollSection>
@@ -212,7 +214,7 @@ const CareerSpringLanding = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-32 bg-gradient-to-br from-primary/5 via-secondary/50 to-white relative overflow-hidden">
+      <section className="py-32 bg-gradient-to-br from-primary/5 via-secondary/30 to-transparent relative overflow-hidden z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <ScrollSection>
             <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
@@ -222,7 +224,7 @@ const CareerSpringLanding = () => {
           
           <ScrollSection delay={100}>
             <p className="text-xl text-foreground/80 mb-10 font-body">
-              You're ready. Let's build your skills profile and find the job that's waiting for you.
+              You're ready. Let's activate your agent and find the job that's waiting for you.
             </p>
           </ScrollSection>
 
@@ -237,18 +239,14 @@ const CareerSpringLanding = () => {
             </Button>
           </ScrollSection>
         </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-secondary rounded-full blur-3xl"></div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-8">
+      <footer className="bg-white/80 backdrop-blur-md border-t border-gray-100 py-8 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center gap-2 text-foreground/60">
             <AnimatedLogo className="w-6 h-6" animate={false} />
-            <span className="text-sm font-body">© 2024 Career Spring. Start your career.</span>
+            <span className="text-sm font-body">© 2025 <span className="text-secondary">career</span><span className="text-primary">spring.ai</span></span>
           </div>
         </div>
       </footer>

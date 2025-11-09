@@ -20,13 +20,13 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
       className={className}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Seed/Base */}
+      {/* Soil/Ground */}
       <ellipse
         cx="50"
-        cy="85"
-        rx="8"
-        ry="4"
-        fill="hsl(120, 61%, 34%)"
+        cy="88"
+        rx="12"
+        ry="3"
+        fill="hsl(30, 20%, 60%)"
         opacity={animate && !hasAnimated ? "0" : "1"}
       >
         {animate && !hasAnimated && (
@@ -34,7 +34,7 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
             attributeName="opacity"
             from="0"
             to="1"
-            dur="0.3s"
+            dur="0.2s"
             fill="freeze"
           />
         )}
@@ -42,30 +42,30 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
 
       {/* Main Stem */}
       <path
-        d="M 50 85 Q 50 60, 50 40"
-        stroke="hsl(120, 61%, 34%)"
-        strokeWidth="3"
+        d="M 50 88 L 50 40"
+        stroke="hsl(120, 61%, 27%)"
+        strokeWidth="2.5"
         fill="none"
         strokeLinecap="round"
-        strokeDasharray={animate && !hasAnimated ? "45" : "0"}
-        strokeDashoffset={animate && !hasAnimated ? "45" : "0"}
+        strokeDasharray={animate && !hasAnimated ? "48" : "0"}
+        strokeDashoffset={animate && !hasAnimated ? "48" : "0"}
       >
         {animate && !hasAnimated && (
           <animate
             attributeName="stroke-dashoffset"
-            from="45"
+            from="48"
             to="0"
-            dur="0.6s"
-            begin="0.3s"
+            dur="0.8s"
+            begin="0.2s"
             fill="freeze"
           />
         )}
       </path>
 
-      {/* Left Leaf */}
+      {/* Left Lower Leaf */}
       <path
-        d="M 50 50 Q 30 45, 25 35 Q 30 40, 50 45"
-        fill="hsl(120, 61%, 40%)"
+        d="M 50 65 Q 35 62, 28 55 Q 32 58, 50 62"
+        fill="hsl(120, 73%, 75%)"
         opacity={animate && !hasAnimated ? "0" : "1"}
       >
         {animate && !hasAnimated && (
@@ -73,17 +73,17 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
             attributeName="opacity"
             from="0"
             to="1"
-            dur="0.3s"
-            begin="0.7s"
+            dur="0.2s"
+            begin="0.8s"
             fill="freeze"
           />
         )}
       </path>
 
-      {/* Right Leaf */}
+      {/* Right Lower Leaf */}
       <path
-        d="M 50 50 Q 70 45, 75 35 Q 70 40, 50 45"
-        fill="hsl(120, 61%, 40%)"
+        d="M 50 65 Q 65 62, 72 55 Q 68 58, 50 62"
+        fill="hsl(120, 73%, 75%)"
         opacity={animate && !hasAnimated ? "0" : "1"}
       >
         {animate && !hasAnimated && (
@@ -91,19 +91,35 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
             attributeName="opacity"
             from="0"
             to="1"
-            dur="0.3s"
+            dur="0.2s"
             begin="0.9s"
             fill="freeze"
           />
         )}
       </path>
 
-      {/* Top Leaf Cluster (3 small leaves) */}
-      <circle
-        cx="45"
-        cy="35"
-        r="5"
-        fill="hsl(120, 61%, 45%)"
+      {/* Left Middle Leaf */}
+      <path
+        d="M 50 52 Q 32 50, 22 42 Q 28 46, 50 50"
+        fill="hsl(120, 70%, 40%)"
+        opacity={animate && !hasAnimated ? "0" : "1"}
+      >
+        {animate && !hasAnimated && (
+          <animate
+            attributeName="opacity"
+            from="0"
+            to="1"
+            dur="0.2s"
+            begin="1.0s"
+            fill="freeze"
+          />
+        )}
+      </path>
+
+      {/* Right Middle Leaf */}
+      <path
+        d="M 50 52 Q 68 50, 78 42 Q 72 46, 50 50"
+        fill="hsl(120, 70%, 40%)"
         opacity={animate && !hasAnimated ? "0" : "1"}
       >
         {animate && !hasAnimated && (
@@ -116,13 +132,17 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
             fill="freeze"
           />
         )}
-      </circle>
-      <circle
-        cx="50"
-        cy="30"
-        r="6"
-        fill="hsl(120, 61%, 50%)"
+      </path>
+
+      {/* Top Leaves - Left */}
+      <ellipse
+        cx="42"
+        cy="38"
+        rx="6"
+        ry="8"
+        fill="hsl(120, 61%, 27%)"
         opacity={animate && !hasAnimated ? "0" : "1"}
+        transform="rotate(-25 42 38)"
       >
         {animate && !hasAnimated && (
           <animate
@@ -134,12 +154,15 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
             fill="freeze"
           />
         )}
-      </circle>
-      <circle
-        cx="55"
-        cy="35"
-        r="5"
-        fill="hsl(120, 61%, 45%)"
+      </ellipse>
+
+      {/* Top Leaves - Center */}
+      <ellipse
+        cx="50"
+        cy="32"
+        rx="7"
+        ry="10"
+        fill="hsl(120, 61%, 27%)"
         opacity={animate && !hasAnimated ? "0" : "1"}
       >
         {animate && !hasAnimated && (
@@ -152,7 +175,29 @@ export const AnimatedLogo = ({ className = "", animate = true }: AnimatedLogoPro
             fill="freeze"
           />
         )}
-      </circle>
+      </ellipse>
+
+      {/* Top Leaves - Right */}
+      <ellipse
+        cx="58"
+        cy="38"
+        rx="6"
+        ry="8"
+        fill="hsl(120, 61%, 27%)"
+        opacity={animate && !hasAnimated ? "0" : "1"}
+        transform="rotate(25 58 38)"
+      >
+        {animate && !hasAnimated && (
+          <animate
+            attributeName="opacity"
+            from="0"
+            to="1"
+            dur="0.2s"
+            begin="1.4s"
+            fill="freeze"
+          />
+        )}
+      </ellipse>
     </svg>
   );
 };
