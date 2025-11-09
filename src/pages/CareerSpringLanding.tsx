@@ -56,16 +56,21 @@ const CareerSpringLanding = () => {
               className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold leading-tight opacity-0 animate-fade-in mb-6 max-w-5xl" 
               style={{ animationDelay: "0.3s" }}
             >
-              Stop decoding job descriptions.
-              <br />
-              <span className="text-primary">Start your career.</span>
+              Stop Applying. <span className="text-primary">Start Interviewing.</span>
             </h1>
             
             <p 
-              className="text-xl text-foreground/70 mb-12 leading-relaxed opacity-0 animate-fade-in max-w-3xl font-body" 
+              className="text-2xl text-foreground/90 mb-4 leading-relaxed opacity-0 animate-fade-in max-w-3xl font-body font-semibold" 
               style={{ animationDelay: "0.5s" }}
             >
-              Our AI agent finds the perfect job matches for your skills and interests, then helps you apply with one click.
+              Tired of sending 100 applications into a black hole? The "entry-level" market is broken. It's not you.
+            </p>
+
+            <p 
+              className="text-xl text-foreground/70 mb-12 leading-relaxed opacity-0 animate-fade-in max-w-3xl font-body" 
+              style={{ animationDelay: "0.6s" }}
+            >
+              Our AI agent finds jobs that actually match your skills, translates the jargon, and builds a perfect, tailored application in one click.
             </p>
             
             <div 
@@ -77,7 +82,7 @@ const CareerSpringLanding = () => {
                 size="lg"
                 className="text-lg px-8 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
               >
-                {cvUploaded ? "Go to My Job Matches" : "Activate Your AI Agent"}
+                Activate My AI Agent
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               
@@ -101,20 +106,35 @@ const CareerSpringLanding = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollSection>
             <h2 className="text-4xl sm:text-5xl font-display font-bold text-center mb-8">
-              Sound familiar?
+              The "Entry-Level" Trap
             </h2>
           </ScrollSection>
           
           <ScrollSection delay={100}>
-            <p className="text-lg text-foreground/80 leading-relaxed mb-8 font-body">
-              The "entry-level" job market feels broken. Job posts are filled with intimidating corporate jargon—"manage stakeholders," "drive synergy," "fast-paced environment"—that means nothing to you. Worse, they ask for 3 years of experience for a "first" job.
+            <p className="text-lg text-foreground/80 leading-relaxed mb-6 font-body">
+              Sound familiar? You've done everything right, but the job market feels impossible.
             </p>
+            
+            <ul className="space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <span className="text-primary text-xl mt-1">•</span>
+                <p className="text-lg text-foreground/80 font-body">"Entry-level" jobs ask for 3-5 years of experience.</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-primary text-xl mt-1">•</span>
+                <p className="text-lg text-foreground/80 font-body">Job descriptions are a puzzle of corporate jargon ("synergy," "stakeholders," "KPIs") that mean nothing.</p>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-primary text-xl mt-1">•</span>
+                <p className="text-lg text-foreground/80 font-body">You're fighting ATS bots that auto-reject your resume before a human ever sees it.</p>
+              </li>
+            </ul>
           </ScrollSection>
 
           <ScrollSection delay={200}>
             <blockquote className="border-l-4 border-primary pl-6 py-4 bg-white/80 backdrop-blur-sm rounded-r-xl shadow-sm">
               <p className="text-xl font-semibold text-foreground font-display">
-                It's the <span className="text-primary">Experience Paradox</span>: you can't get a job without experience, and you can't get experience without a job.
+                This is the <span className="text-primary">Experience Paradox</span>. You can't get a job without experience, and you can't get experience without a job. It's designed to make you feel unqualified. You are not.
               </p>
             </blockquote>
           </ScrollSection>
@@ -126,17 +146,42 @@ const CareerSpringLanding = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollSection>
             <h2 className="text-4xl sm:text-5xl font-display font-bold text-center mb-6">
-              Career Spring finds the job you're qualified for
+              You're Not Unqualified. You're Just Speaking the Wrong Language.
             </h2>
-            <p className="text-xl text-center text-foreground/70 mb-4 font-body">
-              (even if you don't know it yet)
-            </p>
           </ScrollSection>
 
           <ScrollSection delay={100}>
-            <p className="text-lg text-center text-foreground/80 max-w-3xl mx-auto mb-20 font-body">
-              You have the skills. You just speak a different language than the recruiters. We translate your academic life into a professional resume, find your perfect matches, and let you <strong>apply with one click.</strong>
+            <p className="text-lg text-center text-foreground/80 max-w-3xl mx-auto mb-12 font-body">
+              You have the skills. Recruiters just don't see them. Our AI acts as your personal translator, turning your academic and life experience into the professional language employers understand.
             </p>
+            
+            <div className="max-w-4xl mx-auto space-y-8 mb-20">
+              <div className="bg-white/90 backdrop-blur-sm border-2 border-primary/20 rounded-2xl p-6 shadow-lg">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground/60 mb-2 font-body uppercase tracking-wide">BEFORE (Your CV)</p>
+                    <p className="text-lg text-foreground/80 font-body">"Final Year Statistics Project"</p>
+                  </div>
+                  <div className="md:border-l-2 md:border-primary/20 md:pl-6">
+                    <p className="text-sm font-semibold text-primary mb-2 font-body uppercase tracking-wide">AFTER (Our Translation)</p>
+                    <p className="text-lg text-foreground font-semibold font-body">"Data Analysis: Modeled and analyzed a 5,000-entry dataset to identify key trends."</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/90 backdrop-blur-sm border-2 border-primary/20 rounded-2xl p-6 shadow-lg">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground/60 mb-2 font-body uppercase tracking-wide">BEFORE (Your CV)</p>
+                    <p className="text-lg text-foreground/80 font-body">"Part-time barista"</p>
+                  </div>
+                  <div className="md:border-l-2 md:border-primary/20 md:pl-6">
+                    <p className="text-sm font-semibold text-primary mb-2 font-body uppercase tracking-wide">AFTER (Our Translation)</p>
+                    <p className="text-lg text-foreground font-semibold font-body">"Client Relations & Conflict Resolution: Managed 100+ daily customer interactions and resolved complaints in a high-pressure environment."</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </ScrollSection>
 
           {/* Jargon Decoder Spotlight Section */}
@@ -168,48 +213,26 @@ const CareerSpringLanding = () => {
             </div>
           </ScrollSection>
 
-          {/* Feature Cards Grid */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Feature 2: Skills-First Matcher */}
-            <ScrollSection delay={0}>
-              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02] h-full">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                  <Target className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-display font-semibold mb-4">
-                  We find your hidden skills
-                </h3>
-                <p className="text-foreground/70 mb-6 font-body">
-                  Our matcher bypasses the "years of experience" requirement. We show you <em>why</em> you're a match by connecting your coursework and projects to real-world skills.
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground/80 font-body">Your final stats project → <strong>Data Analysis</strong></span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground/80 font-body">Your shift at the coffee shop → <strong>Problem-Solving & Collaboration</strong></span>
-                  </li>
-                </ul>
+          {/* Feature: Beat the Bots */}
+          <ScrollSection>
+            <div className="bg-white/90 backdrop-blur-sm border-2 border-gray-200 rounded-3xl p-10 max-w-4xl mx-auto shadow-xl">
+              <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <CheckCircle2 className="w-8 h-8 text-primary" />
               </div>
-            </ScrollSection>
-
-            {/* Feature 3: Beat the Bots */}
-            <ScrollSection delay={100}>
-              <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 transition-all duration-200 hover:shadow-xl hover:scale-[1.02] h-full">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-6">
-                  <CheckCircle2 className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-display font-semibold mb-4">
-                  Beat the Bots (and apply in one click)
-                </h3>
-                <p className="text-foreground/70 font-body">
-                  Our AI agent <strong>automatically tailors your CV</strong> for each job vacancy, optimizing it with the right keywords to beat the ATS (Applicant Tracking System) filters. Then, you can apply instantly.
-                </p>
-              </div>
-            </ScrollSection>
-          </div>
+              <h3 className="text-3xl md:text-4xl font-display font-bold text-center mb-6">
+                Beat the Bots. Get the Interview.
+              </h3>
+              <p className="text-lg text-foreground/80 font-body mb-6 text-center max-w-3xl mx-auto">
+                Our <strong>Application Co-Pilot</strong> is your secret weapon to defeat the ATS.
+              </p>
+              <p className="text-lg text-foreground/80 font-body mb-6 leading-relaxed">
+                When you find a job you like, our agent instantly reads the job description and tailors your resume in one click. It automatically highlights the exact keywords and skills the bot is scanning for, ensuring your application gets to a real person.
+              </p>
+              <p className="text-lg text-foreground/80 font-body leading-relaxed">
+                It even writes your cover letter and suggests the perfect email to the hiring manager. No more guesswork.
+              </p>
+            </div>
+          </ScrollSection>
         </div>
       </section>
 
@@ -218,13 +241,16 @@ const CareerSpringLanding = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <ScrollSection>
             <h2 className="text-4xl sm:text-5xl font-display font-bold mb-6">
-              Stop the guesswork. Find your fit.
+              Stop Guessing. Find Your Fit.
             </h2>
           </ScrollSection>
           
           <ScrollSection delay={100}>
+            <p className="text-xl text-foreground/80 mb-4 font-body">
+              You've done the hard work. You're ready.
+            </p>
             <p className="text-xl text-foreground/80 mb-10 font-body">
-              You're ready. Let's activate your agent and find the job that's waiting for you.
+              Stop fighting a broken system. Let's activate your agent and get you the interview you deserve.
             </p>
           </ScrollSection>
 
@@ -235,7 +261,7 @@ const CareerSpringLanding = () => {
                 size="lg"
                 className="text-lg px-10 py-6 rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-xl"
               >
-                {cvUploaded ? "View My Dashboard" : "Get Started (It's Free)"}
+                Activate My Agent and Find My Job
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               
