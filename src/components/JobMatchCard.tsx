@@ -52,9 +52,9 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
   };
 
   return (
-    <Card className="glass-card p-6 hover:shadow-elegant-hover transition-all duration-300 hover:-translate-y-1 relative">
+    <Card className="glass-card p-4 hover:shadow-elegant-hover transition-all duration-300 hover:-translate-y-1 relative">
       {/* Header */}
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
           {/* Company Name */}
           {job.company && (
@@ -83,7 +83,7 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
 
       {/* Salary Breakdown */}
       {job.salaryBreakdown ? (
-        <div className="mb-5 p-4 bg-primary/10 rounded-lg border border-primary/20">
+        <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
           <p className="text-xs text-muted-foreground mb-2">💰 Compensation</p>
           <div className="grid grid-cols-2 gap-3 mb-2">
             <div>
@@ -101,14 +101,14 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
           </p>
         </div>
       ) : job.salary && (
-        <div className="mb-5 p-4 bg-primary/10 rounded-lg border border-primary/20">
+        <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
           <p className="text-xs text-muted-foreground mb-1">Salary Range</p>
           <p className="text-xl font-bold text-primary">{job.salary}</p>
         </div>
       )}
 
       {/* What You'll Actually Do */}
-      <div className="mb-5">
+      <div className="mb-4">
         <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
           <span className="text-primary">📋</span> What you'll actually do
         </h3>
@@ -117,7 +117,7 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
 
       {/* Benefits Section */}
       {job.benefits && (
-        <div className="mb-5 p-4 bg-secondary/30 rounded-lg border border-secondary">
+        <div className="mb-4 p-3 bg-secondary/30 rounded-lg border border-secondary">
           <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
             <span className="text-primary">🎁</span> What you get
           </h3>
@@ -168,7 +168,7 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
 
       {/* Growth Opportunities */}
       {job.growthOpportunities && (
-        <div className="mb-5">
+        <div className="mb-4">
           <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
             <span className="text-primary">📈</span> Your growth path
           </h3>
@@ -178,7 +178,7 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
 
       {/* Specific Profile Matches */}
       {job.matchingPoints && job.matchingPoints.length > 0 && (
-        <div className="mb-5 p-4 bg-primary/5 rounded-lg border border-primary/10">
+        <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/10">
           <h4 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
             <span>✨</span> Why this matches your profile
           </h4>
@@ -195,7 +195,7 @@ const JobMatchCard = ({ job, onApply, onSave, onDislike }: JobMatchCardProps) =>
 
       {/* Company Culture */}
       {job.companyCulture && (
-        <div className="mb-5">
+        <div className="mb-4">
           <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
             <span className="text-primary">🌟</span> Culture & vibe
           </h3>

@@ -12,6 +12,9 @@ import { JobCard } from "@/components/JobCard";
 import JobMatchCard, { JobMatch } from "@/components/JobMatchCard";
 import { InboxEmailCard } from "@/components/InboxEmailCard";
 import { EmailDetailDialog } from "@/components/EmailDetailDialog";
+import { LikedJobsList } from "@/components/LikedJobsList";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Sparkles } from "lucide-react";
 
 interface ScrapedJob {
   id: string;
@@ -54,7 +57,7 @@ interface EmailResponse {
 const Matches = () => {
   const navigate = useNavigate();
   const [scrapedJobs, setScrapedJobs] = useState<ScrapedJob[]>([]);
-  const [cartJobs, setCartJobs] = useState<JobApplication[]>([]);
+  const [likedJobs, setLikedJobs] = useState<JobApplication[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [rejectedApplications, setRejectedApplications] = useState<JobApplication[]>([]);
   const [inboxEmails, setInboxEmails] = useState<EmailResponse[]>([]);
@@ -113,16 +116,16 @@ const Matches = () => {
       
       setScrapedJobs(uniqueGraduateJobs);
 
-      // Load cart items
-      const { data: cart, error: cartError } = await supabase
+      // Load liked items (changed from cart)
+      const { data: liked, error: likedError } = await supabase
         .from('job_applications')
         .select('*')
         .eq('user_id', uid)
-        .eq('status', 'cart')
+        .eq('status', 'liked')
         .order('created_at', { ascending: false });
 
-      if (cartError) throw cartError;
-      setCartJobs(cart || []);
+      if (likedError) throw likedError;
+      setLikedJobs(liked || []);
 
       // Load active applications (not cart or rejected)
       const { data: apps, error: appsError } = await supabase
@@ -184,7 +187,7 @@ const Matches = () => {
     }
   };
 
-  const handleAddToCart = async (job: JobMatch) => {
+  const handleLikeJob = async (job: JobMatch) => {
     if (!userId) return;
 
     try {
@@ -195,22 +198,22 @@ const Matches = () => {
           job_id: job.id,
           position: job.description.substring(0, 100),
           company: job.company || 'Company',
-          status: 'cart',
+          status: 'liked',
         });
 
       if (error) throw error;
 
       toast({
-        title: "Added to Queue! 📋",
-        description: `${job.company}`,
+        title: "Liked! 💚",
+        description: `${job.company} added to your liked jobs`,
       });
 
       loadData(userId);
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error('Error liking job:', error);
       toast({
         title: "Error",
-        description: "Failed to add job to cart",
+        description: "Failed to like job",
         variant: "destructive",
       });
     }
@@ -230,7 +233,7 @@ const Matches = () => {
     });
   };
 
-  const handleRemoveFromCart = async (applicationId: string) => {
+  const handleRemoveFromLiked = async (applicationId: string) => {
     try {
       const { error } = await supabase
         .from('job_applications')
@@ -240,28 +243,27 @@ const Matches = () => {
       if (error) throw error;
 
       toast({
-        title: "Removed from Queue",
-        description: "Job removed from your queue",
+        title: "Removed",
+        description: "Job removed from liked jobs",
       });
 
       if (userId) loadData(userId);
     } catch (error) {
-      console.error('Error removing from cart:', error);
+      console.error('Error removing from liked:', error);
       toast({
         title: "Error",
-        description: "Failed to remove job from cart",
+        description: "Failed to remove job",
         variant: "destructive",
       });
     }
   };
 
-  const handleApplyToAll = async () => {
-    if (!userId || cartJobs.length === 0) return;
+  const handleApplyToSelected = async (jobIds: string[]) => {
+    if (!userId || jobIds.length === 0) return;
 
     setIsApplying(true);
     try {
-      // Update all cart items to "applied" status
-      const applicationIds = cartJobs.map(job => job.id);
+      // Update selected liked items to "applied" status
       
       const { error } = await supabase
         .from('job_applications')
@@ -270,20 +272,20 @@ const Matches = () => {
           application_sent_at: new Date().toISOString(),
           last_status_update: new Date().toISOString(),
         })
-        .in('id', applicationIds);
+        .in('id', jobIds);
 
       if (error) throw error;
 
       toast({
         title: "Applications Submitted! 🎉",
-        description: `Moved ${cartJobs.length} jobs to Applications. Companies will respond soon...`,
+        description: `Applied to ${jobIds.length} job${jobIds.length !== 1 ? 's' : ''}. Companies will respond soon...`,
       });
 
       loadData(userId);
 
-      // Simulate company responses after 10 seconds, processing sequentially
+      // Simulate company responses after 10 seconds
       setTimeout(async () => {
-        await simulateCompanyResponses(applicationIds);
+        await simulateCompanyResponses(jobIds);
       }, 10000);
 
     } catch (error) {
@@ -463,9 +465,9 @@ const Matches = () => {
                 <Briefcase className="w-4 h-4" />
                 New Jobs ({scrapedJobs.length})
               </TabsTrigger>
-              <TabsTrigger value="cart" className="flex-1 flex items-center gap-2 justify-center">
+              <TabsTrigger value="liked" className="flex-1 flex items-center gap-2 justify-center">
                 <ShoppingCart className="w-4 h-4" />
-                Queue ({cartJobs.length})
+                Liked Jobs ({likedJobs.length})
               </TabsTrigger>
               <TabsTrigger value="applications" className="flex-1 flex items-center gap-2 justify-center">
                 <CheckCircle className="w-4 h-4" />
@@ -490,55 +492,149 @@ const Matches = () => {
                 <p className="text-xl text-foreground/70">Loading new jobs...</p>
               </div>
             ) : scrapedJobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {scrapedJobs.map((job) => {
-                  // Calculate days since posted
-                  const postedDaysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
-                  const postedText = postedDaysAgo === 0 ? 'today' : postedDaysAgo === 1 ? 'yesterday' : `${postedDaysAgo} days ago`;
+              <>
+                {/* Banner for new jobs */}
+                <Alert className="mb-6 bg-primary/5 border-primary/20">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <AlertDescription className="ml-2">
+                    <span className="font-semibold text-primary">
+                      While you were away, we found {scrapedJobs.length} new job{scrapedJobs.length !== 1 ? 's' : ''} that match your profile!
+                    </span>
+                  </AlertDescription>
+                </Alert>
 
-                  const jobMatch: JobMatch = {
-                    id: job.job_id,
-                    matchScore: job.match_score || 85,
-                    company: job.company,
-                    description: job.description || 'Work on exciting projects and gain hands-on experience. Daily tasks include collaborating with team members, attending stand-ups, and contributing to real-world solutions.',
-                    location: job.location,
-                    salary: job.salary || 'Competitive salary',
-                    postedDate: postedText,
-                    matchingPoints: [
-                      'Your education background aligns with the role requirements',
-                      'Your skills match the technical stack they use',
-                      'The career level fits your experience stage'
-                    ],
-                    salaryBreakdown: {
-                      monthly: job.salary?.includes('month') ? job.salary : '€2,000 - €2,500',
-                      yearly: '€24,000 - €30,000',
-                      type: 'gross' as const,
-                      notes: 'Plus holiday allowance'
-                    },
-                    benefits: {
-                      workArrangement: 'Hybrid (3 days office, 2 days remote)',
-                      hasCar: false,
-                      freeLunch: true,
-                      learningBudget: '€1,000/year',
-                      officePerks: ['Modern office', 'Standing desks', 'Game room'],
-                      vacationDays: '25 days',
-                      otherBenefits: ['Pension contribution', 'Health insurance', 'Phone allowance']
-                    },
-                    growthOpportunities: 'Mentorship from senior team members, professional development budget, clear career progression path, and opportunities to attend industry conferences and workshops.',
-                    companyCulture: 'Collaborative and supportive work environment with flexible hours, hybrid work options, regular team activities, and strong emphasis on work-life balance.',
-                  };
-                  
-                  return (
-                    <JobMatchCard
-                      key={job.id}
-                      job={jobMatch}
-                      onApply={handleAddToCart}
-                      onSave={handleSaveJob}
-                      onDislike={handleDislikeJob}
-                    />
-                  );
-                })}
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {scrapedJobs.map((job, index) => {
+                    // Calculate days since posted
+                    const postedDaysAgo = Math.floor((Date.now() - new Date(job.scraped_at).getTime()) / (1000 * 60 * 60 * 24));
+                    const postedText = postedDaysAgo === 0 ? 'today' : postedDaysAgo === 1 ? 'yesterday' : `${postedDaysAgo} days ago`;
+
+                    // Diverse job descriptions
+                    const descriptions = [
+                      'Support the product team in building and testing new features. You will analyze user feedback, help prioritize roadmaps, and work directly with engineers to bring ideas to life. Perfect for learning the full product lifecycle.',
+                      'Assist in developing web applications using modern frameworks. Daily tasks include writing clean code, debugging issues, participating in code reviews, and learning best practices from senior developers.',
+                      'Join marketing campaigns from concept to execution. You will create social media content, analyze campaign metrics, conduct market research, and contribute creative ideas to reach target audiences.',
+                      'Help design user experiences that people love. You will create wireframes, conduct user testing, collaborate with developers, and learn industry-standard design tools while building a strong portfolio.',
+                      'Support HR operations including recruitment, onboarding, and employee engagement. You will screen candidates, organize interviews, maintain employee records, and help create a positive workplace culture.',
+                    ];
+
+                    const matchPoints = [
+                      [
+                        'Your business administration background fits their requirements',
+                        'Previous internship experience matches their expectations',
+                        'You have the analytical skills they are looking for',
+                      ],
+                      [
+                        'Your programming coursework aligns with their tech stack',
+                        'Portfolio projects demonstrate relevant skills',
+                        'Interest in continuous learning matches their culture',
+                      ],
+                      [
+                        'Communication skills stand out in your profile',
+                        'Social media experience is exactly what they need',
+                        'Creative thinking aligns with campaign-focused role',
+                      ],
+                      [
+                        'Design software proficiency matches their tools',
+                        'Your portfolio shows strong visual design sense',
+                        'User-centered approach aligns with their methodology',
+                      ],
+                      [
+                        'People skills highlighted in your CV fit perfectly',
+                        'Organizational abilities match HR coordination needs',
+                        'Interest in workplace culture aligns with their values',
+                      ],
+                    ];
+
+                    const benefits = [
+                      {
+                        workArrangement: 'Hybrid (3 days office, 2 days remote)',
+                        hasCar: false,
+                        freeLunch: true,
+                        learningBudget: '€1,000/year',
+                        officePerks: ['Modern office', 'Standing desks', 'Game room'],
+                        vacationDays: '25 days',
+                        otherBenefits: ['Pension contribution', 'Health insurance', 'Phone allowance']
+                      },
+                      {
+                        workArrangement: 'Fully remote with quarterly team meetups',
+                        hasCar: false,
+                        freeLunch: false,
+                        learningBudget: '€1,500/year',
+                        officePerks: ['Home office stipend €500', 'Co-working space access'],
+                        vacationDays: '28 days',
+                        otherBenefits: ['Latest tech equipment', 'Wellness budget €300/year']
+                      },
+                      {
+                        workArrangement: 'Office-based with flexible hours',
+                        hasCar: true,
+                        carDetails: 'Company lease car after 6 months',
+                        freeLunch: true,
+                        learningBudget: '€2,000/year',
+                        officePerks: ['Rooftop terrace', 'Gym access', 'Coffee bar'],
+                        vacationDays: '26 days',
+                        otherBenefits: ['Travel allowance', 'Team events monthly', 'Bonus scheme']
+                      },
+                      {
+                        workArrangement: 'Hybrid (2 days office, 3 days remote)',
+                        hasCar: false,
+                        freeLunch: false,
+                        learningBudget: '€750/year',
+                        officePerks: ['Creative workspace', 'Design library', 'Collaboration zones'],
+                        vacationDays: '24 days',
+                        otherBenefits: ['Software subscriptions', 'Conference tickets', 'Mentorship program']
+                      },
+                      {
+                        workArrangement: 'Office-based (9-5 with flexible start)',
+                        hasCar: false,
+                        freeLunch: true,
+                        learningBudget: '€800/year',
+                        officePerks: ['Central location', 'Free parking', 'Quiet rooms'],
+                        vacationDays: '25 days',
+                        otherBenefits: ['Training courses', 'Career coaching', 'Team building budget']
+                      },
+                    ];
+
+                    const salaries = [
+                      { monthly: '€2,000 - €2,500', yearly: '€24,000 - €30,000', notes: 'Plus holiday allowance' },
+                      { monthly: '€2,200 - €2,800', yearly: '€26,400 - €33,600', notes: 'Includes 13th month' },
+                      { monthly: '€2,500 - €3,000', yearly: '€30,000 - €36,000', notes: 'Plus performance bonus' },
+                      { monthly: '€1,800 - €2,300', yearly: '€21,600 - €27,600', notes: 'Plus travel allowance' },
+                      { monthly: '€2,100 - €2,600', yearly: '€25,200 - €31,200', notes: 'Competitive benefits package' },
+                    ];
+
+                    const jobMatch: JobMatch = {
+                      id: job.job_id,
+                      matchScore: job.match_score || 85,
+                      company: job.company,
+                      description: descriptions[index % descriptions.length],
+                      location: job.location,
+                      salary: job.salary || 'Competitive salary',
+                      postedDate: postedText,
+                      matchingPoints: matchPoints[index % matchPoints.length],
+                      salaryBreakdown: {
+                        monthly: salaries[index % salaries.length].monthly,
+                        yearly: salaries[index % salaries.length].yearly,
+                        type: 'gross' as const,
+                        notes: salaries[index % salaries.length].notes
+                      },
+                      benefits: benefits[index % benefits.length],
+                      growthOpportunities: 'Mentorship from senior team members, professional development budget, clear career progression path, and opportunities to attend industry conferences and workshops.',
+                      companyCulture: 'Collaborative and supportive work environment with flexible hours, regular team activities, and strong emphasis on work-life balance.',
+                    };
+                    
+                    return (
+                      <JobMatchCard
+                        key={job.id}
+                        job={jobMatch}
+                        onApply={handleLikeJob}
+                        onSave={handleSaveJob}
+                        onDislike={handleDislikeJob}
+                      />
+                    );
+                  })}
+                </div>
+              </>
             ) : (
               <div className="text-center py-12">
                 <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -548,48 +644,14 @@ const Matches = () => {
             )}
           </TabsContent>
 
-          {/* Application Queue Tab */}
-          <TabsContent value="cart">
-            {cartJobs.length > 0 ? (
-              <>
-                <div className="mb-6 flex justify-between items-center bg-primary/10 p-4 rounded-lg">
-                  <div>
-                    <p className="font-semibold">{cartJobs.length} jobs in your queue</p>
-                    <p className="text-sm text-foreground/70">Ready to apply automatically</p>
-                  </div>
-                  <Button 
-                    onClick={handleApplyToAll}
-                    disabled={isApplying}
-                    size="lg"
-                  >
-                    {isApplying ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Applying...</>
-                    ) : (
-                      <>Apply to All {cartJobs.length} Jobs</>
-                    )}
-                  </Button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {cartJobs.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      title={job.position}
-                      company={job.company}
-                      status="cart"
-                      onAction={() => handleRemoveFromCart(job.id)}
-                      actionLabel="Remove from Queue"
-                    />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl text-foreground/70 mb-2">Your queue is empty</p>
-                <p className="text-foreground/60">Add jobs from the New Jobs tab to apply automatically</p>
-              </div>
-            )}
+          {/* Liked Jobs Tab */}
+          <TabsContent value="liked">
+            <LikedJobsList
+              jobs={likedJobs}
+              onApplySelected={handleApplyToSelected}
+              onRemove={handleRemoveFromLiked}
+              isApplying={isApplying}
+            />
           </TabsContent>
 
           {/* Applications Tab */}
