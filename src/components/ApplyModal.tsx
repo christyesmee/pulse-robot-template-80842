@@ -18,11 +18,12 @@ interface ApplyModalProps {
 }
 
 const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
-  const [showEmail, setShowEmail] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [emailContent, setEmailContent] = useState("");
   const [isGeneratingCV, setIsGeneratingCV] = useState(false);
   const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
+  const [cvGenerated, setCvGenerated] = useState(false);
+  const [cvBlobUrl, setCvBlobUrl] = useState<string>("");
   const { toast } = useToast();
 
   if (!job) return null;
@@ -32,23 +33,17 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
     
     try {
       const userId = localStorage.getItem("userId") || "mock-user-123";
-      const cvBlobUrl = await generateTailoredCV(userId, job.id);
+      const blobUrl = await generateTailoredCV(userId, job.id);
       
-      // Store the CV blob URL for later use
-      localStorage.setItem("lastGeneratedCV", cvBlobUrl);
+      // Store the CV blob URL but don't download yet
+      setCvBlobUrl(blobUrl);
+      setCvGenerated(true);
+      localStorage.setItem("lastGeneratedCV", blobUrl);
       localStorage.setItem("lastGeneratedCVFilename", `CV_${job.company}_${job.id}.pdf`);
       
-      // Trigger download
-      const link = document.createElement("a");
-      link.href = cvBlobUrl;
-      link.download = `CV_${job.company}_${job.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
       toast({
-        title: "CV downloaded",
-        description: "Your tailored CV is saved locally. Attach it in the email draft.",
+        title: "CV generated!",
+        description: "Click 'Download Tailored CV' to save it to your device.",
       });
     } catch (error) {
       console.error("CV generation error:", error);
@@ -62,6 +57,22 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
     }
   };
 
+  const handleDownloadCV = () => {
+    if (!cvBlobUrl) return;
+    
+    const link = document.createElement("a");
+    link.href = cvBlobUrl;
+    link.download = `CV_${job.company}_${job.id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "CV downloaded",
+      description: "Your tailored CV is saved locally. Attach it to the email.",
+    });
+  };
+
   const handleWriteEmail = async () => {
     setIsGeneratingEmail(true);
     
@@ -70,7 +81,6 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
       const email = await generateApplicationEmail(userId, job.id);
       
       setEmailContent(email);
-      setShowEmail(true);
     } catch (error) {
       console.error("Email generation error:", error);
       toast({
@@ -132,16 +142,17 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
 
         <div className="space-y-6 py-4">
           {/* Job Details */}
-          <div className="bg-emerald-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600 mb-2">
+          <div className="bg-secondary/30 p-4 rounded-lg border border-primary/10">
+            <p className="text-sm text-foreground/70 mb-2">
               <strong>Location:</strong> {job.location}
             </p>
-            <p className="text-sm text-gray-700">{job.description}</p>
+            <p className="text-sm text-foreground/80">{job.description}</p>
           </div>
 
-          {!showEmail ? (
-            /* Initial View */
-            <div className="space-y-4">
+          {/* CV Section */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-display font-semibold">Step 1: Prepare Your CV</h3>
+            {!cvGenerated ? (
               <Button
                 onClick={handleGenerateCV}
                 size="lg"
@@ -161,39 +172,55 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
                   </>
                 )}
               </Button>
+            ) : (
               <Button
-                onClick={handleWriteEmail}
+                onClick={handleDownloadCV}
                 size="lg"
                 className="w-full"
-                disabled={isGeneratingEmail}
+                variant="outline"
               >
-                {isGeneratingEmail ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Writing Email...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-5 h-5 mr-2" />
-                    Write Application Email
-                  </>
-                )}
+                <FileDown className="w-5 h-5 mr-2" />
+                Download Tailored CV
               </Button>
-            </div>
-          ) : (
-            /* Email View */
-            <div className="space-y-4">
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">
-                  {emailContent}
-                </pre>
-              </div>
+            )}
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Email Section */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-display font-semibold">Step 2: Write Your Email</h3>
+            <Button
+              onClick={handleWriteEmail}
+              size="lg"
+              className="w-full"
+              variant="outline"
+              disabled={isGeneratingEmail}
+            >
+              {isGeneratingEmail ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                  Writing Email...
+                </>
+              ) : (
+                <>
+                  <Mail className="w-5 h-5 mr-2" />
+                  Generate Application Email
+                </>
+              )}
+            </Button>
+
+            {emailContent && (
+              <div className="space-y-3 mt-4">
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/80">
+                    {emailContent}
+                  </pre>
+                </div>
+
                 <Button
                   onClick={handleCopyEmail}
                   variant="outline"
                   size="lg"
+                  className="w-full"
                 >
                   {isCopied ? (
                     <>
@@ -207,16 +234,14 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
                     </>
                   )}
                 </Button>
-                <Button
-                  onClick={handleGenerateCV}
-                  variant="outline"
-                  size="lg"
-                >
-                  <FileDown className="w-5 h-5 mr-2" />
-                  Download Tailored CV
-                </Button>
               </div>
+            )}
+          </div>
 
+          {/* Send Section */}
+          {emailContent && (
+            <div className="space-y-3 pt-4 border-t">
+              <h3 className="text-lg font-display font-semibold">Step 3: Send Application</h3>
               <Button 
                 onClick={handleOpenOutlook}
                 size="lg" 
@@ -226,8 +251,8 @@ const ApplyModal = ({ isOpen, onClose, job }: ApplyModalProps) => {
                 Open in Outlook Desktop
               </Button>
               
-              <p className="text-xs text-center text-gray-500 mt-2">
-                📎 Make sure to attach your downloaded CV file to the email
+              <p className="text-xs text-center text-foreground/60 mt-2">
+                📎 Remember to attach your downloaded CV file to the email
               </p>
             </div>
           )}
