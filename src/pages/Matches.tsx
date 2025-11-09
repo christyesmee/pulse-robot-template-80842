@@ -1,199 +1,212 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import JobMatchCard, { JobMatch } from "@/components/JobMatchCard";
-import ApplyModal from "@/components/ApplyModal";
 import { Button } from "@/components/ui/button";
-import { User, Bookmark, X, RotateCcw } from "lucide-react";
-import { fetchJobMatches, saveJob, dislikeJob } from "@/services/api";
+import { User, ShoppingCart, Briefcase, CheckCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 
-const MOCK_JOBS: JobMatch[] = [
-  {
-    id: "1",
-    matchScore: 92,
-    company: "TechStart Solutions",
-    salary: "£24,000 - £28,000",
-    description:
-      "You'll be helping customers solve problems with our software, mostly through email and chat. You'll learn our products inside-out and become the friendly face customers count on.",
-    matchReason: "Your communication skills and interest in technology make you perfect for this role. The company offers excellent training and career progression.",
-    location: "Remote",
-  },
-  {
-    id: "2",
-    matchScore: 88,
-    company: "GrowthCo",
-    salary: "£22,000 - £26,000",
-    description:
-      "You'll assist the marketing team by creating social media posts, scheduling content, and tracking how well our campaigns perform. No previous experience needed - we'll teach you everything!",
-    matchReason: "Your creativity and social media savviness align perfectly with this role. Great entry point into digital marketing with hands-on learning.",
-    location: "London, UK",
-  },
-  {
-    id: "3",
-    matchScore: 85,
-    company: "DataFlow Inc",
-    salary: "£23,000 - £27,000",
-    description:
-      "You'll help organize and clean up data in spreadsheets, making sure everything is accurate and up-to-date. Perfect for someone detail-oriented who likes working with numbers.",
-    matchReason: "Your attention to detail and analytical mindset make you ideal for this position. Excellent foundation for a career in data analysis.",
-    location: "Remote",
-  },
-  {
-    id: "4",
-    matchScore: 78,
-    company: "CreativeHub",
-    salary: "£21,000 - £25,000",
-    description:
-      "You'll work alongside our design team to create graphics for social media and websites. We'll teach you to use design tools like Canva and Figma - creativity matters more than experience!",
-    matchReason: "Your creative portfolio shows promise. This role offers mentorship from experienced designers and a chance to build your professional design skills.",
-    location: "Manchester, UK",
-  },
-  {
-    id: "5",
-    matchScore: 75,
-    company: "FutureBuilders",
-    salary: "£23,000 - £26,000",
-    description:
-      "You'll help test new features on our website and mobile app, reporting any issues you find. Great for someone who loves technology and has an eye for detail.",
-    matchReason: "Your tech enthusiasm and methodical approach suit QA testing perfectly. Great stepping stone into software development or product management.",
-    location: "Remote",
-  },
-  {
-    id: "6",
-    matchScore: 68,
-    company: "PeopleFirst HR",
-    salary: "£22,000 - £25,000",
-    description:
-      "You'll support the HR team with onboarding new employees, scheduling interviews, and maintaining employee records. Perfect for someone who's organized and enjoys helping people.",
-    matchReason: "Your organizational skills and people-focused approach align with HR work. Good entry into a stable career with clear progression paths.",
-    location: "Birmingham, UK",
-  },
-];
+interface ScrapedJob {
+  id: string;
+  job_id: string;
+  title: string;
+  company: string;
+  location: string;
+  salary: string;
+  description: string;
+  match_score: number;
+  source_url: string;
+  scraped_at: string;
+}
+
+interface JobApplication {
+  id: string;
+  job_id: string;
+  position: string;
+  company: string;
+  status: string;
+  created_at: string;
+  application_sent_at?: string;
+  last_status_update?: string;
+}
 
 const Matches = () => {
   const navigate = useNavigate();
-  const [jobs, setJobs] = useState<JobMatch[]>([]);
-  const [savedJobs, setSavedJobs] = useState<JobMatch[]>([]);
-  const [dislikedJobs, setDislikedJobs] = useState<JobMatch[]>([]);
-  const [selectedJob, setSelectedJob] = useState<JobMatch | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [scrapedJobs, setScrapedJobs] = useState<ScrapedJob[]>([]);
+  const [cartJobs, setCartJobs] = useState<JobApplication[]>([]);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isApplying, setIsApplying] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleGoToProfile = () => {
-    navigate("/profile");
-  };
-
-  // Fetch job matches on component mount
   useEffect(() => {
-    const loadMatches = async () => {
-      try {
-        const userId = localStorage.getItem("userId") || "mock-user-123";
-        const matches = await fetchJobMatches(userId);
-        setJobs(matches);
-      } catch (error) {
-        console.error("Failed to load job matches:", error);
-        toast({
-          title: "Error Loading Matches",
-          description: "Could not load your job matches. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
       }
+      setUserId(user.id);
+      loadData(user.id);
     };
+    checkAuth();
+  }, [navigate]);
 
-    loadMatches();
-    
-    // Load saved and disliked jobs from localStorage
-    const saved = JSON.parse(localStorage.getItem("savedJobs") || "[]");
-    const disliked = JSON.parse(localStorage.getItem("dislikedJobs") || "[]");
-    setSavedJobs(saved);
-    setDislikedJobs(disliked);
-  }, [toast]);
-
-  const handleApply = (job: JobMatch) => {
-    setSelectedJob(job);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async (job: JobMatch) => {
+  const loadData = async (uid: string) => {
+    setIsLoading(true);
     try {
-      const userId = localStorage.getItem("userId") || "mock-user-123";
-      await saveJob(userId, job.id);
-      
-      // Update local state and localStorage
-      setJobs(jobs.filter((j) => j.id !== job.id));
-      const savedJobs = JSON.parse(localStorage.getItem("savedJobs") || "[]");
-      localStorage.setItem("savedJobs", JSON.stringify([...savedJobs, job]));
-      
-      toast({
-        title: "Job Saved! 💚",
-        description: "Added to your saved careers",
-      });
+      // Load scraped jobs
+      const { data: jobs, error: jobsError } = await supabase
+        .from('scraped_jobs')
+        .select('*')
+        .order('match_score', { ascending: false });
+
+      if (jobsError) throw jobsError;
+      setScrapedJobs(jobs || []);
+
+      // Load cart items
+      const { data: cart, error: cartError } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', uid)
+        .eq('status', 'cart')
+        .order('created_at', { ascending: false });
+
+      if (cartError) throw cartError;
+      setCartJobs(cart || []);
+
+      // Load applications
+      const { data: apps, error: appsError } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', uid)
+        .neq('status', 'cart')
+        .order('last_status_update', { ascending: false });
+
+      if (appsError) throw appsError;
+      setApplications(apps || []);
     } catch (error) {
-      console.error("Failed to save job:", error);
+      console.error('Error loading data:', error);
       toast({
         title: "Error",
-        description: "Could not save job. Please try again.",
+        description: "Failed to load jobs. Please refresh the page.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddToCart = async (job: ScrapedJob) => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('job_applications')
+        .insert({
+          user_id: userId,
+          job_id: job.job_id,
+          position: job.title,
+          company: job.company,
+          status: 'cart',
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Added to Cart! 🛒",
+        description: `${job.company} - ${job.title}`,
+      });
+
+      loadData(userId);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add job to cart",
         variant: "destructive",
       });
     }
   };
 
-  const handleDislike = async (job: JobMatch) => {
+  const handleRemoveFromCart = async (applicationId: string) => {
     try {
-      const userId = localStorage.getItem("userId") || "mock-user-123";
-      await dislikeJob(userId, job.id);
-      
-      // Update local state and localStorage
-      setJobs(jobs.filter((j) => j.id !== job.id));
-      const updated = [...dislikedJobs, job];
-      setDislikedJobs(updated);
-      localStorage.setItem("dislikedJobs", JSON.stringify(updated));
-      
+      const { error } = await supabase
+        .from('job_applications')
+        .delete()
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
       toast({
-        title: "Job Dismissed",
-        description: "We won't show this job again",
+        title: "Removed from Cart",
+        description: "Job removed from your cart",
       });
+
+      if (userId) loadData(userId);
     } catch (error) {
-      console.error("Failed to dislike job:", error);
+      console.error('Error removing from cart:', error);
       toast({
         title: "Error",
-        description: "Could not dismiss job. Please try again.",
+        description: "Failed to remove job from cart",
         variant: "destructive",
       });
     }
   };
 
-  const handleRemoveSaved = (job: JobMatch) => {
-    const updated = savedJobs.filter((j) => j.id !== job.id);
-    setSavedJobs(updated);
-    localStorage.setItem("savedJobs", JSON.stringify(updated));
-  };
+  const handleApplyToAll = async () => {
+    if (!userId || cartJobs.length === 0) return;
 
-  const handleDislikeSaved = (job: JobMatch) => {
-    handleRemoveSaved(job);
-    const updated = [...dislikedJobs, job];
-    setDislikedJobs(updated);
-    localStorage.setItem("dislikedJobs", JSON.stringify(updated));
-  };
+    setIsApplying(true);
+    try {
+      const applicationIds = cartJobs.map(job => job.id);
+      
+      const { error } = await supabase.functions.invoke('apply-to-jobs', {
+        body: { applicationIds, userId }
+      });
 
-  const handleRestore = (job: JobMatch) => {
-    const updated = dislikedJobs.filter((j) => j.id !== job.id);
-    setDislikedJobs(updated);
-    localStorage.setItem("dislikedJobs", JSON.stringify(updated));
+      if (error) throw error;
+
+      toast({
+        title: "Applications Submitted! 🎉",
+        description: `Successfully applied to ${cartJobs.length} jobs`,
+      });
+
+      loadData(userId);
+    } catch (error) {
+      console.error('Error applying to jobs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit applications. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   const getMatchColor = (score: number) => {
-    if (score >= 80) return "bg-green-100 text-green-800 border-green-200";
-    if (score >= 60) return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    return "bg-orange-100 text-orange-800 border-orange-200";
+    if (score >= 80) return "bg-green-500/10 text-green-700 border-green-500/20";
+    if (score >= 60) return "bg-yellow-500/10 text-yellow-700 border-yellow-500/20";
+    return "bg-orange-500/10 text-orange-700 border-orange-500/20";
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { label: string; className: string }> = {
+      cart: { label: 'In Cart', className: 'bg-blue-500/10 text-blue-700' },
+      applied: { label: 'Applied', className: 'bg-purple-500/10 text-purple-700' },
+      pending: { label: 'Pending', className: 'bg-yellow-500/10 text-yellow-700' },
+      interview_requested: { label: 'Interview Requested', className: 'bg-green-500/10 text-green-700' },
+      interview_scheduled: { label: 'Interview Scheduled', className: 'bg-green-600/10 text-green-800' },
+      rejected: { label: 'Rejected', className: 'bg-red-500/10 text-red-700' },
+      offer_received: { label: 'Offer Received', className: 'bg-emerald-500/10 text-emerald-700' },
+    };
+    return statusConfig[status] || { label: status, className: 'bg-gray-500/10 text-gray-700' };
   };
 
   return (
@@ -201,167 +214,172 @@ const Matches = () => {
       <AppHeader />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
-              Your Job Matches
+              AI Job Hunter
             </h1>
             <p className="text-foreground/70">
-              Browse matches, saved opportunities, and dismissed jobs
+              Your AI agent finds jobs daily. Add to cart and apply automatically.
             </p>
           </div>
           
-          {/* My Profile Button */}
           <Button
-            onClick={handleGoToProfile}
+            onClick={() => navigate("/profile")}
             variant="outline"
             size="lg"
-            className="rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
+            className="rounded-full"
           >
             <User className="w-4 h-4 mr-2" />
             My Profile
           </Button>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="matches" className="w-full">
+        <Tabs defaultValue="new-jobs" className="w-full">
           <TabsList className="w-full md:w-auto mb-8">
-            <TabsTrigger value="matches" className="flex items-center gap-2">
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-xs">
-                {jobs.length}
-              </span>
-              All Matches
+            <TabsTrigger value="new-jobs" className="flex items-center gap-2">
+              <Briefcase className="w-4 h-4" />
+              New Jobs ({scrapedJobs.length})
             </TabsTrigger>
-            <TabsTrigger value="saved" className="flex items-center gap-2">
-              <Bookmark className="w-4 h-4" />
-              Saved ({savedJobs.length})
+            <TabsTrigger value="cart" className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              Cart ({cartJobs.length})
             </TabsTrigger>
-            <TabsTrigger value="disliked" className="flex items-center gap-2">
-              <X className="w-4 h-4" />
-              Disliked ({dislikedJobs.length})
+            <TabsTrigger value="applications" className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              Applications ({applications.length})
             </TabsTrigger>
           </TabsList>
 
-          {/* All Matches Tab */}
-          <TabsContent value="matches">
+          {/* New Jobs Tab */}
+          <TabsContent value="new-jobs">
             {isLoading ? (
               <div className="text-center py-12">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-xl text-foreground/70">Loading your perfect matches...</p>
+                <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-xl text-foreground/70">Loading new jobs...</p>
               </div>
-            ) : jobs.length > 0 ? (
+            ) : scrapedJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {jobs.map((job) => (
-                  <JobMatchCard
-                    key={job.id}
-                    job={job}
-                    onApply={handleApply}
-                    onSave={handleSave}
-                    onDislike={handleDislike}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-xl text-foreground/70">
-                  No more matches for now. Check back later or explore your saved careers!
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Saved Tab */}
-          <TabsContent value="saved">
-            {savedJobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {savedJobs.map((job) => (
-                  <JobMatchCard
-                    key={job.id}
-                    job={job}
-                    onApply={handleApply}
-                    onSave={handleRemoveSaved}
-                    onDislike={handleDislikeSaved}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl text-foreground/70 mb-2">
-                  No saved careers yet
-                </p>
-                <p className="text-foreground/60">
-                  Save opportunities from your matches to review them later
-                </p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Disliked Tab */}
-          <TabsContent value="disliked">
-            {dislikedJobs.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {dislikedJobs.map((job) => (
-                  <Card key={job.id} className="bg-white/90 backdrop-blur-sm p-6 opacity-60 hover:opacity-100 transition-all duration-200 hover:shadow-lg relative border border-border rounded-2xl">
-                    <Badge
-                      className={`absolute top-4 right-4 text-sm font-bold px-3 py-1 ${getMatchColor(
-                        job.matchScore
-                      )}`}
-                    >
-                      {job.matchScore}% Match
+                {scrapedJobs.map((job) => (
+                  <Card key={job.id} className="p-6 hover:shadow-lg transition-all duration-200 border-2">
+                    <Badge className={`mb-4 ${getMatchColor(job.match_score)}`}>
+                      {job.match_score}% Match
                     </Badge>
-
-                    {job.company && (
-                      <p className="text-sm font-semibold text-foreground/70 mb-2">{job.company}</p>
-                    )}
-
-                    {job.salary && (
-                      <p className="text-lg font-bold text-primary mb-4 mt-8">{job.salary}</p>
-                    )}
-
-                    <div className="mb-4">
-                      <h3 className="text-lg font-bold text-foreground mb-3">
-                        What you'll actually do:
-                      </h3>
-                      <p className="text-foreground/70 leading-relaxed">{job.description}</p>
-                    </div>
-
-                    <div className="pt-4 border-t border-border">
-                      <Button
-                        onClick={() => handleRestore(job)}
-                        variant="outline"
-                        size="lg"
-                        className="w-full rounded-full transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg"
-                      >
-                        <RotateCcw className="w-5 h-5 mr-2" />
-                        Restore to Matches
-                      </Button>
-                    </div>
+                    
+                    <h3 className="text-xl font-bold mb-2">{job.title}</h3>
+                    <p className="text-lg font-semibold text-primary mb-1">{job.company}</p>
+                    <p className="text-sm text-foreground/70 mb-2">{job.location}</p>
+                    <p className="text-lg font-bold text-green-600 mb-4">{job.salary}</p>
+                    
+                    <p className="text-foreground/80 mb-4 line-clamp-3">{job.description}</p>
+                    
+                    <Button 
+                      onClick={() => handleAddToCart(job)}
+                      className="w-full"
+                      disabled={cartJobs.some(c => c.job_id === job.job_id)}
+                    >
+                      {cartJobs.some(c => c.job_id === job.job_id) ? (
+                        <>✓ In Cart</>
+                      ) : (
+                        <><ShoppingCart className="w-4 h-4 mr-2" />Add to Cart</>
+                      )}
+                    </Button>
                   </Card>
                 ))}
               </div>
             ) : (
               <div className="text-center py-12">
-                <X className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl text-foreground/70 mb-2">
-                  No disliked jobs yet
-                </p>
-                <p className="text-foreground/60">
-                  Jobs you dismiss will appear here
-                </p>
+                <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">No new jobs yet</p>
+                <p className="text-foreground/60">Your AI agent searches daily for new opportunities</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Cart Tab */}
+          <TabsContent value="cart">
+            {cartJobs.length > 0 ? (
+              <>
+                <div className="mb-6 flex justify-between items-center bg-primary/10 p-4 rounded-lg">
+                  <div>
+                    <p className="font-semibold">{cartJobs.length} jobs in cart</p>
+                    <p className="text-sm text-foreground/70">Ready to apply automatically</p>
+                  </div>
+                  <Button 
+                    onClick={handleApplyToAll}
+                    disabled={isApplying}
+                    size="lg"
+                  >
+                    {isApplying ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Applying...</>
+                    ) : (
+                      <>Apply to All {cartJobs.length} Jobs</>
+                    )}
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {cartJobs.map((job) => (
+                    <Card key={job.id} className="p-6 hover:shadow-lg transition-all duration-200">
+                      <div className="flex justify-between items-start mb-4">
+                        <Badge className="bg-blue-500/10 text-blue-700">In Cart</Badge>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleRemoveFromCart(job.id)}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold mb-2">{job.position}</h3>
+                      <p className="text-lg font-semibold text-primary mb-4">{job.company}</p>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">Your cart is empty</p>
+                <p className="text-foreground/60">Add jobs from the New Jobs tab to apply automatically</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Applications Tab */}
+          <TabsContent value="applications">
+            {applications.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {applications.map((app) => {
+                  const statusInfo = getStatusBadge(app.status);
+                  return (
+                    <Card key={app.id} className="p-6 hover:shadow-lg transition-all duration-200">
+                      <Badge className={statusInfo.className}>{statusInfo.label}</Badge>
+                      
+                      <h3 className="text-xl font-bold mt-4 mb-2">{app.position}</h3>
+                      <p className="text-lg font-semibold text-primary mb-2">{app.company}</p>
+                      
+                      <div className="text-sm text-foreground/70 space-y-1">
+                        <p>Applied: {app.application_sent_at ? new Date(app.application_sent_at).toLocaleDateString() : 'Pending'}</p>
+                        {app.last_status_update && (
+                          <p>Last update: {new Date(app.last_status_update).toLocaleDateString()}</p>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <CheckCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">No applications yet</p>
+                <p className="text-foreground/60">Apply to jobs from your cart to track them here</p>
               </div>
             )}
           </TabsContent>
         </Tabs>
       </main>
-
-      {/* Apply Modal */}
-      <ApplyModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        job={selectedJob}
-      />
       
       <AppFooter />
     </div>
