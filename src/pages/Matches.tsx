@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, ShoppingCart, Briefcase, CheckCircle, Loader2 } from "lucide-react";
+import { User, ShoppingCart, Briefcase, CheckCircle, Loader2, XCircle, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { ApplicationsSummary } from "@/components/ApplicationsSummary";
+import { JobCard } from "@/components/JobCard";
 
 interface ScrapedJob {
   id: string;
@@ -32,6 +32,7 @@ interface JobApplication {
   created_at: string;
   application_sent_at?: string;
   last_status_update?: string;
+  status_details?: any;
 }
 
 const Matches = () => {
@@ -39,6 +40,8 @@ const Matches = () => {
   const [scrapedJobs, setScrapedJobs] = useState<ScrapedJob[]>([]);
   const [cartJobs, setCartJobs] = useState<JobApplication[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [rejectedApplications, setRejectedApplications] = useState<JobApplication[]>([]);
+  const [interviewApplications, setInterviewApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -74,16 +77,39 @@ const Matches = () => {
       if (cartError) throw cartError;
       setCartJobs(cart || []);
 
-      // Load applications
+      // Load active applications (not cart or rejected)
       const { data: apps, error: appsError } = await supabase
         .from('job_applications')
         .select('*')
         .eq('user_id', uid)
-        .neq('status', 'cart')
+        .not('status', 'in', '(cart,rejected)')
+        .in('status', ['applied', 'pending'])
         .order('last_status_update', { ascending: false });
 
       if (appsError) throw appsError;
       setApplications(apps || []);
+
+      // Load rejected applications
+      const { data: rejected, error: rejectedError } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', uid)
+        .eq('status', 'rejected')
+        .order('last_status_update', { ascending: false });
+
+      if (rejectedError) throw rejectedError;
+      setRejectedApplications(rejected || []);
+
+      // Load interview/next steps applications
+      const { data: interviews, error: interviewsError } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', uid)
+        .in('status', ['interview_requested', 'interview_scheduled', 'offer_received'])
+        .order('last_status_update', { ascending: false });
+
+      if (interviewsError) throw interviewsError;
+      setInterviewApplications(interviews || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -190,24 +216,13 @@ const Matches = () => {
     }
   };
 
-  const getMatchColor = (score: number) => {
-    if (score >= 80) return "bg-green-500/10 text-green-700 border-green-500/20";
-    if (score >= 60) return "bg-yellow-500/10 text-yellow-700 border-yellow-500/20";
-    return "bg-orange-500/10 text-orange-700 border-orange-500/20";
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; className: string }> = {
-      cart: { label: 'In Cart', className: 'bg-blue-500/10 text-blue-700' },
-      applied: { label: 'Applied', className: 'bg-purple-500/10 text-purple-700' },
-      pending: { label: 'Pending', className: 'bg-yellow-500/10 text-yellow-700' },
-      interview_requested: { label: 'Interview Requested', className: 'bg-green-500/10 text-green-700' },
-      interview_scheduled: { label: 'Interview Scheduled', className: 'bg-green-600/10 text-green-800' },
-      rejected: { label: 'Rejected', className: 'bg-red-500/10 text-red-700' },
-      offer_received: { label: 'Offer Received', className: 'bg-emerald-500/10 text-emerald-700' },
-    };
-    return statusConfig[status] || { label: status, className: 'bg-gray-500/10 text-gray-700' };
-  };
+  // Calculate summary statistics
+  const totalApplications = applications.length + rejectedApplications.length + interviewApplications.length;
+  const pendingResponses = applications.filter(app => app.status === 'applied' || app.status === 'pending').length;
+  const interviewsScheduled = interviewApplications.filter(app => app.status === 'interview_scheduled').length;
+  const successRate = totalApplications > 0 
+    ? Math.round((interviewApplications.length / totalApplications) * 100) 
+    : 0;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -236,7 +251,7 @@ const Matches = () => {
         </div>
 
         <Tabs defaultValue="new-jobs" className="w-full">
-          <TabsList className="w-full md:w-auto mb-8">
+          <TabsList className="w-full md:w-auto mb-8 grid grid-cols-2 md:grid-cols-5 gap-2">
             <TabsTrigger value="new-jobs" className="flex items-center gap-2">
               <Briefcase className="w-4 h-4" />
               New Jobs ({scrapedJobs.length})
@@ -248,6 +263,14 @@ const Matches = () => {
             <TabsTrigger value="applications" className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4" />
               Applications ({applications.length})
+            </TabsTrigger>
+            <TabsTrigger value="interviews" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Interviews ({interviewApplications.length})
+            </TabsTrigger>
+            <TabsTrigger value="learning" className="flex items-center gap-2">
+              <XCircle className="w-4 h-4" />
+              Learning ({rejectedApplications.length})
             </TabsTrigger>
           </TabsList>
 
@@ -261,30 +284,19 @@ const Matches = () => {
             ) : scrapedJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {scrapedJobs.map((job) => (
-                  <Card key={job.id} className="p-6 hover:shadow-lg transition-all duration-200 border-2">
-                    <Badge className={`mb-4 ${getMatchColor(job.match_score)}`}>
-                      {job.match_score}% Match
-                    </Badge>
-                    
-                    <h3 className="text-xl font-bold mb-2">{job.title}</h3>
-                    <p className="text-lg font-semibold text-primary mb-1">{job.company}</p>
-                    <p className="text-sm text-foreground/70 mb-2">{job.location}</p>
-                    <p className="text-lg font-bold text-green-600 mb-4">{job.salary}</p>
-                    
-                    <p className="text-foreground/80 mb-4 line-clamp-3">{job.description}</p>
-                    
-                    <Button 
-                      onClick={() => handleAddToCart(job)}
-                      className="w-full"
-                      disabled={cartJobs.some(c => c.job_id === job.job_id)}
-                    >
-                      {cartJobs.some(c => c.job_id === job.job_id) ? (
-                        <>✓ In Cart</>
-                      ) : (
-                        <><ShoppingCart className="w-4 h-4 mr-2" />Add to Cart</>
-                      )}
-                    </Button>
-                  </Card>
+                  <JobCard
+                    key={job.id}
+                    title={job.title}
+                    company={job.company}
+                    location={job.location}
+                    salary={job.salary}
+                    description={job.description}
+                    matchScore={job.match_score}
+                    sourceUrl={job.source_url}
+                    onAction={() => handleAddToCart(job)}
+                    actionLabel={cartJobs.some(c => c.job_id === job.job_id) ? "✓ In Cart" : "Add to Cart"}
+                    actionDisabled={cartJobs.some(c => c.job_id === job.job_id)}
+                  />
                 ))}
               </div>
             ) : (
@@ -320,21 +332,14 @@ const Matches = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {cartJobs.map((job) => (
-                    <Card key={job.id} className="p-6 hover:shadow-lg transition-all duration-200">
-                      <div className="flex justify-between items-start mb-4">
-                        <Badge className="bg-blue-500/10 text-blue-700">In Cart</Badge>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleRemoveFromCart(job.id)}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                      
-                      <h3 className="text-xl font-bold mb-2">{job.position}</h3>
-                      <p className="text-lg font-semibold text-primary mb-4">{job.company}</p>
-                    </Card>
+                    <JobCard
+                      key={job.id}
+                      title={job.position}
+                      company={job.company}
+                      status="cart"
+                      onAction={() => handleRemoveFromCart(job.id)}
+                      actionLabel="Remove from Cart"
+                    />
                   ))}
                 </div>
               </>
@@ -349,32 +354,118 @@ const Matches = () => {
 
           {/* Applications Tab */}
           <TabsContent value="applications">
+            <ApplicationsSummary
+              totalApplications={totalApplications}
+              pendingResponses={pendingResponses}
+              interviewsScheduled={interviewsScheduled}
+              successRate={successRate}
+            />
+            
             {applications.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {applications.map((app) => {
-                  const statusInfo = getStatusBadge(app.status);
-                  return (
-                    <Card key={app.id} className="p-6 hover:shadow-lg transition-all duration-200">
-                      <Badge className={statusInfo.className}>{statusInfo.label}</Badge>
-                      
-                      <h3 className="text-xl font-bold mt-4 mb-2">{app.position}</h3>
-                      <p className="text-lg font-semibold text-primary mb-2">{app.company}</p>
-                      
-                      <div className="text-sm text-foreground/70 space-y-1">
-                        <p>Applied: {app.application_sent_at ? new Date(app.application_sent_at).toLocaleDateString() : 'Pending'}</p>
-                        {app.last_status_update && (
-                          <p>Last update: {new Date(app.last_status_update).toLocaleDateString()}</p>
-                        )}
-                      </div>
-                    </Card>
-                  );
-                })}
+                {applications.map((app) => (
+                  <JobCard
+                    key={app.id}
+                    title={app.position}
+                    company={app.company}
+                    status={app.status}
+                    applicationSentAt={app.application_sent_at}
+                    lastStatusUpdate={app.last_status_update}
+                    statusDetails={app.status_details}
+                  />
+                ))}
               </div>
             ) : (
               <div className="text-center py-12">
                 <CheckCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl text-foreground/70 mb-2">No applications yet</p>
+                <p className="text-xl text-foreground/70 mb-2">No active applications</p>
                 <p className="text-foreground/60">Apply to jobs from your cart to track them here</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Interviews & Next Steps Tab */}
+          <TabsContent value="interviews">
+            {interviewApplications.length > 0 ? (
+              <>
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="font-semibold text-green-800 mb-1">🎉 Great Progress!</h3>
+                  <p className="text-sm text-green-700">
+                    You have {interviewApplications.length} opportunities moving forward. Keep up the momentum!
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {interviewApplications.map((app) => (
+                    <JobCard
+                      key={app.id}
+                      title={app.position}
+                      company={app.company}
+                      status={app.status}
+                      applicationSentAt={app.application_sent_at}
+                      lastStatusUpdate={app.last_status_update}
+                      statusDetails={app.status_details}
+                      showEmails={true}
+                      emailCount={0}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">No interviews scheduled yet</p>
+                <p className="text-foreground/60">When companies respond positively, they'll appear here</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Learning Opportunities (Rejected) Tab */}
+          <TabsContent value="learning">
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="font-semibold text-blue-800 mb-1">💡 Learning & Growth</h3>
+              <p className="text-sm text-blue-700">
+                Every "not selected" is a step closer to the right opportunity. These experiences help refine your approach for future applications.
+              </p>
+            </div>
+
+            {rejectedApplications.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 bg-white border rounded-lg">
+                    <p className="text-sm text-foreground/60 mb-1">Total Reviewed</p>
+                    <p className="text-2xl font-bold">{rejectedApplications.length}</p>
+                  </div>
+                  <div className="p-4 bg-white border rounded-lg">
+                    <p className="text-sm text-foreground/60 mb-1">Keep Applying</p>
+                    <p className="text-2xl font-bold">{scrapedJobs.length}</p>
+                    <p className="text-xs text-foreground/60">new matches available</p>
+                  </div>
+                  <div className="p-4 bg-white border rounded-lg">
+                    <p className="text-sm text-foreground/60 mb-1">Success Rate</p>
+                    <p className="text-2xl font-bold">{successRate}%</p>
+                    <p className="text-xs text-foreground/60">interviews secured</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {rejectedApplications.map((app) => (
+                    <JobCard
+                      key={app.id}
+                      title={app.position}
+                      company={app.company}
+                      status={app.status}
+                      applicationSentAt={app.application_sent_at}
+                      lastStatusUpdate={app.last_status_update}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <XCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">No learning opportunities yet</p>
+                <p className="text-foreground/60">Keep applying - every application is valuable experience</p>
               </div>
             )}
           </TabsContent>
