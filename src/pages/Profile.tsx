@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Upload, X, Plus, ArrowLeft, FileText } from "lucide-react";
+import { Upload, X, Plus, ArrowLeft, FileText, Linkedin, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 const FIELDS = [
   "Marketing",
@@ -36,6 +38,11 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // Auth State
+  const [user, setUser] = useState<User | null>(null);
+  const [isLinkedInConnected, setIsLinkedInConnected] = useState(false);
+  const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false);
+  
   // CV State
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvFileName, setCvFileName] = useState<string>("");
@@ -54,6 +61,25 @@ const Profile = () => {
   const [tools, setTools] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
   const [newTool, setNewTool] = useState("");
+
+  // Check LinkedIn connection status
+  useEffect(() => {
+    const checkLinkedInConnection = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        // Check if user is connected via LinkedIn
+        const identities = user.identities || [];
+        const linkedInIdentity = identities.find(
+          (identity) => identity.provider === 'linkedin_oidc'
+        );
+        setIsLinkedInConnected(!!linkedInIdentity);
+      }
+    };
+    
+    checkLinkedInConnection();
+  }, []);
 
   // Load existing data
   useEffect(() => {
@@ -212,6 +238,46 @@ const Profile = () => {
     navigate("/matches");
   };
 
+  // LinkedIn Connection Handler
+  const handleConnectLinkedIn = async () => {
+    if (!user) {
+      toast({
+        title: "Not Logged In",
+        description: "Please log in to connect LinkedIn",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsConnectingLinkedIn(true);
+    try {
+      const { error } = await supabase.auth.linkIdentity({
+        provider: 'linkedin_oidc',
+        options: {
+          redirectTo: `${window.location.origin}/profile`,
+          scopes: 'openid profile email'
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "LinkedIn Connection Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("LinkedIn connection error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to connect LinkedIn. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnectingLinkedIn(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 flex flex-col">
       <AppHeader />
@@ -283,6 +349,59 @@ const Profile = () => {
                     className="hidden"
                   />
                 </Label>
+              </div>
+            )}
+          </Card>
+
+          {/* LinkedIn Connection Section */}
+          <Card className="glass-card p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-display font-bold mb-2">LinkedIn Profile</h2>
+                <p className="text-foreground/70">
+                  Connect your LinkedIn to import and sync your professional profile
+                </p>
+              </div>
+              <Linkedin className="w-12 h-12 text-[#0077B5]" />
+            </div>
+
+            {isLinkedInConnected ? (
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-lg">LinkedIn Connected</p>
+                    <p className="text-sm text-foreground/60">Your profile is synced with LinkedIn</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-[#0077B5]/30 rounded-xl p-8 text-center hover:border-[#0077B5]/50 transition-colors">
+                <Linkedin className="w-16 h-16 text-[#0077B5]/40 mx-auto mb-4" />
+                <p className="text-foreground/70 mb-4 text-lg">LinkedIn not connected</p>
+                <Button
+                  onClick={handleConnectLinkedIn}
+                  disabled={isConnectingLinkedIn}
+                  size="lg"
+                  className="bg-[#0077B5] hover:bg-[#006399] text-white"
+                >
+                  {isConnectingLinkedIn ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Linkedin className="w-5 h-5 mr-2" />
+                      Connect LinkedIn
+                    </>
+                  )}
+                </Button>
+                <p className="text-sm text-foreground/60 mt-4">
+                  We'll import your experience, skills, and education automatically
+                </p>
               </div>
             )}
           </Card>
