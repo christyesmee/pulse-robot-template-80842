@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, ShoppingCart, Briefcase, CheckCircle, Loader2, XCircle, Calendar } from "lucide-react";
+import { User, ShoppingCart, Briefcase, CheckCircle, Loader2, XCircle, Inbox } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AppHeader } from "@/components/AppHeader";
 import { AppFooter } from "@/components/AppFooter";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { ApplicationsSummary } from "@/components/ApplicationsSummary";
 import { JobCard } from "@/components/JobCard";
+import { InboxEmailCard } from "@/components/InboxEmailCard";
 
 interface ScrapedJob {
   id: string;
@@ -35,13 +36,26 @@ interface JobApplication {
   status_details?: any;
 }
 
+interface EmailResponse {
+  id: string;
+  application_id: string;
+  from_email: string;
+  to_email: string;
+  subject: string;
+  body: string;
+  received_at: string;
+  status_extracted: string;
+  company: string;
+  position: string;
+}
+
 const Matches = () => {
   const navigate = useNavigate();
   const [scrapedJobs, setScrapedJobs] = useState<ScrapedJob[]>([]);
   const [cartJobs, setCartJobs] = useState<JobApplication[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [rejectedApplications, setRejectedApplications] = useState<JobApplication[]>([]);
-  const [interviewApplications, setInterviewApplications] = useState<JobApplication[]>([]);
+  const [inboxEmails, setInboxEmails] = useState<EmailResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -111,16 +125,31 @@ const Matches = () => {
       if (rejectedError) throw rejectedError;
       setRejectedApplications(rejected || []);
 
-      // Load interview/next steps applications
-      const { data: interviews, error: interviewsError } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('user_id', uid)
-        .in('status', ['interview_requested', 'interview_scheduled', 'offer_received'])
-        .order('last_status_update', { ascending: false });
+      // Load inbox emails (all received emails for user's applications)
+      const { data: emails, error: emailsError } = await supabase
+        .from('application_emails')
+        .select(`
+          *,
+          job_applications!inner (
+            user_id,
+            position,
+            company
+          )
+        `)
+        .eq('job_applications.user_id', uid)
+        .eq('direction', 'received')
+        .order('received_at', { ascending: false });
 
-      if (interviewsError) throw interviewsError;
-      setInterviewApplications(interviews || []);
+      if (emailsError) throw emailsError;
+      
+      // Transform the data to include position and company
+      const transformedEmails = (emails || []).map((email: any) => ({
+        ...email,
+        position: email.job_applications.position,
+        company: email.job_applications.company,
+      }));
+      
+      setInboxEmails(transformedEmails || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast({
@@ -216,10 +245,10 @@ const Matches = () => {
 
       loadData(userId);
 
-      // Simulate company responses after 30 seconds
+      // Simulate company responses after 10 seconds, processing sequentially
       setTimeout(async () => {
         await simulateCompanyResponses(applicationIds);
-      }, 30000);
+      }, 10000);
 
     } catch (error) {
       console.error('Error applying to jobs:', error);
@@ -243,26 +272,27 @@ const Matches = () => {
         .select('*')
         .in('id', applicationIds);
 
-      if (!applications) return;
+      if (!applications || applications.length === 0) return;
 
+      // Response types in specific order: assignment -> interview -> reject
       const responseTypes = [
+        {
+          type: 'assignment',
+          status: 'interview_requested',
+          subject: 'Next Steps - Assignment Required for {position}',
+          body: 'Hi there,\n\nThank you for your application. We would like to move you to the next round.\n\nPlease complete the following assessment:\n- Technical Skills Test (60 minutes)\n- Personality Assessment (20 minutes)\n\nLink: https://assessment.example.com\n\nDeadline: 48 hours from now\n\nBest,\n{company} Team',
+        },
         {
           type: 'interview',
           status: 'interview_scheduled',
           subject: 'Interview Invitation - {position}',
-          body: 'Dear Candidate,\n\nWe are impressed with your application and would like to invite you to an interview.\n\nDate: {date}\nTime: {time}\nLocation: Video Call\n\nPlease confirm your availability.\n\nBest regards,\n{company} Recruitment Team',
-        },
-        {
-          type: 'next_round',
-          status: 'interview_requested',
-          subject: 'Next Steps - {position}',
-          body: 'Hi there,\n\nThank you for your application. We would like to move you to the next round.\n\nPlease complete the following assessment:\n- Technical Skills Test (60 minutes)\n- Personality Assessment (20 minutes)\n\nLink: https://assessment.example.com\n\nBest,\n{company} Team',
+          body: 'Dear Candidate,\n\nWe are impressed with your application and would like to invite you to an interview.\n\nDate: {date}\nTime: {time}\nLocation: Video Call (Microsoft Teams)\n\nPlease confirm your availability by replying to this email.\n\nBest regards,\n{company} Recruitment Team',
         },
         {
           type: 'rejection',
           status: 'rejected',
           subject: 'Application Update - {position}',
-          body: 'Dear Applicant,\n\nThank you for your interest in the {position} role at {company}.\n\nAfter careful consideration, we have decided to move forward with other candidates whose experience more closely matches our current needs.\n\nWe encourage you to apply for future opportunities.\n\nBest wishes,\n{company} Hiring Team',
+          body: 'Dear Applicant,\n\nThank you for your interest in the {position} role at {company}.\n\nAfter careful consideration, we have decided to move forward with other candidates whose experience more closely matches our current needs.\n\nWe encourage you to apply for future opportunities that may be a better fit.\n\nBest wishes,\n{company} Hiring Team',
         },
       ];
 
@@ -278,20 +308,14 @@ const Matches = () => {
         return hours[Math.floor(Math.random() * hours.length)];
       };
 
-      let interviewCount = 0;
+      let positiveCount = 0;
       let rejectionCount = 0;
 
-      for (const app of applications) {
-        // Randomly select response type with weighted probability
-        const rand = Math.random();
-        let responseType;
-        if (rand < 0.35) {
-          responseType = responseTypes[0]; // 35% interview
-        } else if (rand < 0.65) {
-          responseType = responseTypes[1]; // 30% next round
-        } else {
-          responseType = responseTypes[2]; // 35% rejection
-        }
+      // Process applications sequentially with specific order
+      for (let i = 0; i < applications.length; i++) {
+        const app = applications[i];
+        // Cycle through response types: 0, 1, 2, 0, 1, 2, ...
+        const responseType = responseTypes[i % 3];
 
         // Personalize the email
         const subject = responseType.subject
@@ -331,8 +355,8 @@ const Matches = () => {
           })
           .eq('id', app.id);
 
-        if (responseType.type === 'interview' || responseType.type === 'next_round') {
-          interviewCount++;
+        if (responseType.type !== 'rejection') {
+          positiveCount++;
         } else {
           rejectionCount++;
         }
@@ -346,7 +370,7 @@ const Matches = () => {
       // Show success notification
       toast({
         title: "📧 Companies Have Responded!",
-        description: `You have ${interviewCount} positive responses! Check Applications and Interviews tabs.`,
+        description: `You have ${positiveCount} positive responses! Check your Inbox.`,
         duration: 7000,
       });
 
@@ -356,11 +380,12 @@ const Matches = () => {
   };
 
   // Calculate summary statistics
-  const totalApplications = applications.length + rejectedApplications.length + interviewApplications.length;
+  const totalApplications = applications.length + rejectedApplications.length + inboxEmails.filter(e => e.status_extracted !== 'rejected').length;
   const pendingResponses = applications.filter(app => app.status === 'applied' || app.status === 'pending').length;
-  const interviewsScheduled = interviewApplications.filter(app => app.status === 'interview_scheduled').length;
+  const interviewsScheduled = inboxEmails.filter(e => e.status_extracted === 'interview_scheduled').length;
+  const positiveResponses = inboxEmails.filter(e => e.status_extracted !== 'rejected').length;
   const successRate = totalApplications > 0 
-    ? Math.round((interviewApplications.length / totalApplications) * 100) 
+    ? Math.round((positiveResponses / totalApplications) * 100) 
     : 0;
 
   return (
@@ -404,9 +429,9 @@ const Matches = () => {
                 <CheckCircle className="w-4 h-4" />
                 Applications ({applications.length})
               </TabsTrigger>
-              <TabsTrigger value="interviews" className="flex-1 flex items-center gap-2 justify-center">
-                <Calendar className="w-4 h-4" />
-                Interviews ({interviewApplications.length})
+              <TabsTrigger value="inbox" className="flex-1 flex items-center gap-2 justify-center">
+                <Inbox className="w-4 h-4" />
+                Inbox ({inboxEmails.length})
               </TabsTrigger>
               <TabsTrigger value="learning" className="flex-1 flex items-center gap-2 justify-center">
                 <XCircle className="w-4 h-4" />
@@ -525,38 +550,36 @@ const Matches = () => {
             )}
           </TabsContent>
 
-          {/* Interviews & Next Steps Tab */}
-          <TabsContent value="interviews">
-            {interviewApplications.length > 0 ? (
+          {/* Inbox Tab - Email Responses */}
+          <TabsContent value="inbox">
+            {inboxEmails.length > 0 ? (
               <>
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-1">🎉 Great Progress!</h3>
-                  <p className="text-sm text-green-700">
-                    You have {interviewApplications.length} opportunities moving forward. Keep up the momentum!
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 mb-1">📬 Company Responses</h3>
+                  <p className="text-sm text-blue-700">
+                    You have {inboxEmails.length} messages from companies. Track your application progress here.
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {interviewApplications.map((app) => (
-                    <JobCard
-                      key={app.id}
-                      title={app.position}
-                      company={app.company}
-                      status={app.status}
-                      applicationSentAt={app.application_sent_at}
-                      lastStatusUpdate={app.last_status_update}
-                      statusDetails={app.status_details}
-                      showEmails={true}
-                      emailCount={0}
+                <div className="space-y-3">
+                  {inboxEmails.map((email) => (
+                    <InboxEmailCard
+                      key={email.id}
+                      company={email.company}
+                      position={email.position}
+                      subject={email.subject}
+                      body={email.body}
+                      receivedAt={email.received_at}
+                      status={email.status_extracted}
                     />
                   ))}
                 </div>
               </>
             ) : (
               <div className="text-center py-12">
-                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-xl text-foreground/70 mb-2">No interviews scheduled yet</p>
-                <p className="text-foreground/60">When companies respond positively, they'll appear here</p>
+                <Inbox className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-xl text-foreground/70 mb-2">No messages yet</p>
+                <p className="text-foreground/60">When companies respond to your applications, you'll see their messages here</p>
               </div>
             )}
           </TabsContent>
